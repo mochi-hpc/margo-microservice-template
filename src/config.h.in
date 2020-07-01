@@ -1,0 +1,13 @@
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+#cmakedefine ALPHA_LOG_DEBUG
+#cmakedefine ALPHA_LOG_ERROR
+#cmakedefine ALPHA_LOG_INFO
+
+#ifdef ALPHA_LOG_DEBUG
+#define ALPHA_LOG_ERROR
+#define ALPHA_LOG_INFO
+#endif
+
+#endif

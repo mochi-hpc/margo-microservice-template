@@ -8,6 +8,9 @@ set (client-src-files
 set (admin-src-files
      admin.c)
 
+set (logging-src-files
+     logging/log.c)
+
 set (beta-src-files
      beta/beta-backend.c)
 
@@ -29,6 +32,8 @@ target_link_libraries (alpha-server
 target_include_directories (alpha-server PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-server BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+target_include_directories (alpha-server BEFORE PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 set_target_properties (alpha-server
     PROPERTIES VERSION ${ALPHA_VERSION}
     SOVERSION ${ALPHA_VERSION_MAJOR})
@@ -39,6 +44,8 @@ target_link_libraries (alpha-client PkgConfig::MARGO PkgConfig::UUID)
 target_include_directories (alpha-client PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-client BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+target_include_directories (alpha-client BEFORE PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 set_target_properties (alpha-client
     PROPERTIES VERSION ${ALPHA_VERSION}
     SOVERSION ${ALPHA_VERSION_MAJOR})
@@ -49,6 +56,8 @@ target_link_libraries (alpha-admin PkgConfig::MARGO PkgConfig::UUID)
 target_include_directories (alpha-admin PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-admin BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+target_include_directories (alpha-admin BEFORE PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 set_target_properties (alpha-admin
     PROPERTIES VERSION ${ALPHA_VERSION}
     SOVERSION ${ALPHA_VERSION_MAJOR})
@@ -75,6 +84,9 @@ set (ADMIN_PRIVATE_LIBS  "-lalpha-admin")
 configure_file ("alpha-server.pc.in" "alpha-server.pc" @ONLY)
 configure_file ("alpha-client.pc.in" "alpha-client.pc" @ONLY)
 configure_file ("alpha-admin.pc.in"  "alpha-admin.pc"  @ONLY)
+
+# configure config.h
+configure_file ("config.h.in" "config.h" @ONLY) 
 
 # "make install" rules
 install (TARGETS alpha-server alpha-client alpha-admin

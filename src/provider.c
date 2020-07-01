@@ -1,6 +1,7 @@
 #include "alpha/alpha-server.h"
 #include "provider.h"
 #include "types.h"
+#include "logging.h"
 
 // backends that we want to add at compile time
 #include "beta/beta-backend.h"
@@ -71,21 +72,25 @@ int alpha_provider_register(
     hg_id_t id;
     hg_bool_t flag;
 
+    LOG_INFO("Registering ALPHA provider with provider id %u", provider_id);
+
     flag = margo_is_listening(mid);
     if(flag == HG_FALSE) {
-        fprintf(stderr, "alpha_provider_register(): margo instance is not a server.");
+        LOG_ERROR("Margo instance is not a server");
         return ALPHA_ERR_INVALID_ARGS;
     }
 
     margo_provider_registered_name(mid, "alpha_sum", provider_id, &id, &flag);
     if(flag == HG_TRUE) {
-        fprintf(stderr, "alpha_provider_register(): a provider with the same provider id (%d) already exists.\n", provider_id);
+        LOG_ERROR("Provider with the same provider id (%u) already register", provider_id);
         return ALPHA_ERR_INVALID_PROVIDER;
     }
 
     p = (alpha_provider_t)calloc(1, sizeof(*p));
-    if(p == NULL)
+    if(p == NULL) {
+        LOG_ERROR("Could not allocate memory for provider");
         return ALPHA_ERR_ALLOCATION;
+    }
 
     p->mid = mid;
     p->provider_id = provider_id;
@@ -148,11 +153,13 @@ int alpha_provider_register(
 
     if(provider)
         *provider = p;
+    LOG_INFO("ALPHA provider registration done");
     return ALPHA_SUCCESS;
 }
 
 static void alpha_finalize_provider(void* p)
 {
+    LOG_INFO("Finalizing ALPHA provider");
     alpha_provider_t provider = (alpha_provider_t)p;
     margo_deregister(provider->mid, provider->create_resource_id);
     margo_deregister(provider->mid, provider->open_resource_id);
@@ -166,16 +173,18 @@ static void alpha_finalize_provider(void* p)
     free(provider->backend_types);
     free(provider->token);
     free(provider);
+    LOG_INFO("ALPHA provider successfuly finalized");
 }
 
 int alpha_provider_destroy(
         alpha_provider_t provider)
 {
+    LOG_INFO("Destroying ALPHA provider");
     /* pop the finalize callback */
     margo_provider_pop_finalize_callback(provider->mid, provider);
     /* call the callback */
     alpha_finalize_provider(provider);
-
+    LOG_INFO("ALPHA provider successfuly destroyed");
     return ALPHA_SUCCESS;
 }
 
@@ -183,6 +192,8 @@ alpha_return_t alpha_provider_register_backend(
         alpha_provider_t provider,
         alpha_backend_impl* backend_impl)
 {
+    LOG_INFO("Adding backend implementation \"%s\" to ALPHA provider",
+             backend_impl->name);
     return add_backend_impl(provider, backend_impl);
 }
 
@@ -203,12 +214,14 @@ static void alpha_create_resource_ult(hg_handle_t h)
     /* deserialize the input */
     hret = margo_get_input(h, &in);
     if(hret != HG_SUCCESS) {
+        LOG_ERROR("Could not deserialize output (mercury error %d)", hret);
         out.ret = ALPHA_ERR_FROM_MERCURY;
         goto finish;
     }
     
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
+        LOG_ERROR("Invalid token");
         out.ret = ALPHA_ERR_INVALID_TOKEN;
         goto finish;
     }
@@ -216,6 +229,7 @@ static void alpha_create_resource_ult(hg_handle_t h)
     /* find the backend implementation for the requested type */
     alpha_backend_impl* backend = find_backend_impl(provider, in.type);
     if(!backend) {
+        LOG_ERROR("Could not find backend of type \"%s\"", in.type);
         out.ret = ALPHA_ERR_INVALID_BACKEND;
         goto finish;
     }
@@ -229,6 +243,7 @@ static void alpha_create_resource_ult(hg_handle_t h)
     ret = backend->create_resource(provider, in.config, &context);
     if(ret != ALPHA_SUCCESS) {
         out.ret = ret;
+        LOG_ERROR("Could not create resource, backend returned %d", ret);
         goto finish;
     }
 
@@ -242,6 +257,8 @@ static void alpha_create_resource_ult(hg_handle_t h)
     /* set the response */
     out.ret = ALPHA_SUCCESS;
     out.id = id;
+
+    LOG_INFO("Created resource of type \"%s\"", in.type);
 
 finish:
     ret = margo_respond(h, &out);
@@ -267,6 +284,7 @@ static void alpha_open_resource_ult(hg_handle_t h)
     /* deserialize the input */
     hret = margo_get_input(h, &in);
     if(hret != HG_SUCCESS) {
+        LOG_ERROR("Could not deserialize output (mercury error %d)", hret);
         out.ret = ALPHA_ERR_FROM_MERCURY;
         goto finish;
     }
@@ -274,6 +292,7 @@ static void alpha_open_resource_ult(hg_handle_t h)
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
         out.ret = ALPHA_ERR_INVALID_TOKEN;
+        LOG_ERROR("Invalid token");
         goto finish;
     }
 
@@ -281,6 +300,7 @@ static void alpha_open_resource_ult(hg_handle_t h)
     alpha_backend_impl* backend = find_backend_impl(provider, in.type);
     if(!backend) {
         out.ret = ALPHA_ERR_INVALID_BACKEND;
+        LOG_ERROR("Could not find backend of type \"%s\"", in.type);
         goto finish;
     }
 
@@ -307,6 +327,8 @@ static void alpha_open_resource_ult(hg_handle_t h)
     out.ret = ALPHA_SUCCESS;
     out.id = id;
 
+    LOG_INFO("Opened resource of type \"%s\"", in.type);
+
 finish:
     hret = margo_respond(h, &out);
     hret = margo_free_input(h, &in);
@@ -331,6 +353,7 @@ static void alpha_close_resource_ult(hg_handle_t h)
     /* deserialize the input */
     hret = margo_get_input(h, &in);
     if(hret != HG_SUCCESS) {
+        LOG_ERROR("Could not deserialize output (mercury error %d)", hret);
         out.ret = ALPHA_ERR_FROM_MERCURY;
         goto finish;
     }
@@ -338,6 +361,7 @@ static void alpha_close_resource_ult(hg_handle_t h)
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
         out.ret = ALPHA_ERR_INVALID_TOKEN;
+        LOG_ERROR("Invalid token");
         goto finish;
     }
 
@@ -345,6 +369,8 @@ static void alpha_close_resource_ult(hg_handle_t h)
      * (its close function will be called) */
     ret = remove_resource(provider, &in.id, 1);
     out.ret = ret;
+
+    LOG_INFO("Removed resource");
 
 finish:
     hret = margo_respond(h, &out);
@@ -369,6 +395,7 @@ static void alpha_destroy_resource_ult(hg_handle_t h)
     /* deserialize the input */
     hret = margo_get_input(h, &in);
     if(hret != HG_SUCCESS) {
+        LOG_ERROR("Could not deserialize output (mercury error %d)", hret);
         out.ret = ALPHA_ERR_FROM_MERCURY;
         goto finish;
     }
@@ -376,6 +403,7 @@ static void alpha_destroy_resource_ult(hg_handle_t h)
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
         out.ret = ALPHA_ERR_INVALID_TOKEN;
+        LOG_ERROR("Invalid token");
         goto finish;
     }
 
@@ -383,6 +411,7 @@ static void alpha_destroy_resource_ult(hg_handle_t h)
     alpha_resource* resource = find_resource(provider, &in.id);
     if(!resource) {
         out.ret = ALPHA_ERR_INVALID_RESOURCE;
+        LOG_ERROR("Could not find resource");
         goto finish;
     }
 
@@ -392,6 +421,12 @@ static void alpha_destroy_resource_ult(hg_handle_t h)
     /* remove the resource from the provider 
      * (its close function will NOT be called) */
     out.ret = remove_resource(provider, &in.id, 0);
+
+    if(out.ret == ALPHA_SUCCESS) {
+        LOG_DEBUG("Destroyed resource");
+    } else {
+        LOG_ERROR("Could not destroy resource, resource may be left in an invalid state");
+    }
 
 finish:
     hret = margo_respond(h, &out);
@@ -417,6 +452,7 @@ static void alpha_list_resources_ult(hg_handle_t h)
     /* deserialize the input */
     hret = margo_get_input(h, &in);
     if(hret != HG_SUCCESS) {
+        LOG_ERROR("Could not deserialize output (mercury error %d)", hret);
         out.ret = ALPHA_ERR_FROM_MERCURY;
         goto finish;
     }
@@ -424,6 +460,7 @@ static void alpha_list_resources_ult(hg_handle_t h)
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
         out.ret = ALPHA_ERR_INVALID_TOKEN;
+        LOG_ERROR("Invalid token");
         goto finish;
     }
 
@@ -438,6 +475,8 @@ static void alpha_list_resources_ult(hg_handle_t h)
     HASH_ITER(hh, provider->resources, r, tmp) {
         out.ids[i++] = r->id;
     }
+
+    LOG_DEBUG("Listed resources");
 
 finish:
     hret = margo_respond(h, &out);
@@ -462,17 +501,21 @@ static void alpha_hello_ult(hg_handle_t h)
     /* deserialize the input */
     hret = margo_get_input(h, &in);
     if(hret != HG_SUCCESS) {
+        LOG_ERROR("Could not deserialize output (mercury error %d)", hret);
         goto finish;
     }
 
     /* find the resource */
     alpha_resource* resource = find_resource(provider, &in.resource_id);
     if(!resource) {
+        LOG_ERROR("Could not find requested resource");
         goto finish;
     }
 
     /* call hello on the resource's context */
     resource->fn->hello(resource->ctx);
+
+    LOG_DEBUG("Called hello RPC");
 
 finish:
     margo_destroy(h);
@@ -495,6 +538,7 @@ static void alpha_sum_ult(hg_handle_t h)
     /* deserialize the input */
     hret = margo_get_input(h, &in);
     if(hret != HG_SUCCESS) {
+        LOG_ERROR("Could not deserialize output (mercury error %d)", hret);
         out.ret = ALPHA_ERR_FROM_MERCURY;
         goto finish;
     }
@@ -503,11 +547,14 @@ static void alpha_sum_ult(hg_handle_t h)
     alpha_resource* resource = find_resource(provider, &in.resource_id);
     if(!resource) {
         out.ret = ALPHA_ERR_INVALID_RESOURCE;
+        LOG_ERROR("Could not find requested resource");
         goto finish;
     }
 
     /* call hello on the resource's context */
     out.result = resource->fn->sum(resource->ctx, in.x, in.y);
+
+    LOG_DEBUG("Called sum RPC");
 
 finish:
     hret = margo_respond(h, &out);
