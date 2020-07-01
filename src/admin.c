@@ -4,8 +4,6 @@
 
 alpha_return_t alpha_admin_init(margo_instance_id mid, alpha_admin_t* admin)
 {
-    int ret = ALPHA_SUCCESS;
-
     alpha_admin_t a = (alpha_admin_t)calloc(1, sizeof(*a));
     if(!a) return ALPHA_ERR_ALLOCATION;
 
@@ -20,6 +18,7 @@ alpha_return_t alpha_admin_init(margo_instance_id mid, alpha_admin_t* admin)
         margo_registered_name(mid, "alpha_open_resource", &a->open_resource_id, &flag);
         margo_registered_name(mid, "alpha_close_resource", &a->close_resource_id, &flag);
         margo_registered_name(mid, "alpha_destroy_resource", &a->destroy_resource_id, &flag);
+        margo_registered_name(mid, "alpha_list_resources", &a->list_resources_id, &flag);
         /* Get more existing RPCs... */
     } else {
         a->create_resource_id =
@@ -34,6 +33,9 @@ alpha_return_t alpha_admin_init(margo_instance_id mid, alpha_admin_t* admin)
         a->destroy_resource_id =
             MARGO_REGISTER(mid, "alpha_destroy_resource",
             destroy_resource_in_t, destroy_resource_out_t, NULL);
+        a->list_resources_id =
+            MARGO_REGISTER(mid, "alpha_list_resources",
+            list_resources_in_t, list_resources_out_t, NULL);
         /* Register more RPCs ... */
     }
 
@@ -59,24 +61,25 @@ alpha_return_t alpha_create_resource(
     hg_handle_t h;
     create_resource_in_t  in;
     create_resource_out_t out;
-    hg_return_t ret;
+    hg_return_t hret;
+    alpha_return_t ret;
 
     in.type   = (char*)type;
     in.config = (char*)config;
     in.token  = (char*)token;
 
-    ret = margo_create(admin->mid, address, admin->create_resource_id, &h);
-    if(ret != HG_SUCCESS)
+    hret = margo_create(admin->mid, address, admin->create_resource_id, &h);
+    if(hret != HG_SUCCESS)
         return ALPHA_ERR_FROM_MERCURY;
 
-    ret = margo_provider_forward(provider_id, h, &in);
-    if(ret != HG_SUCCESS) {
+    hret = margo_provider_forward(provider_id, h, &in);
+    if(hret != HG_SUCCESS) {
         margo_destroy(h);
         return ALPHA_ERR_FROM_MERCURY;
     }
 
-    ret = margo_get_output(h, &out);
-    if(ret != HG_SUCCESS) {
+    hret = margo_get_output(h, &out);
+    if(hret != HG_SUCCESS) {
         margo_destroy(h);
         return ALPHA_ERR_FROM_MERCURY;
     }
@@ -108,24 +111,25 @@ alpha_return_t alpha_open_resource(
     hg_handle_t h;
     open_resource_in_t  in;
     open_resource_out_t out;
-    hg_return_t ret;
+    hg_return_t hret;
+    alpha_return_t ret;
 
     in.type   = (char*)type;
     in.config = (char*)config;
     in.token  = (char*)token;
 
-    ret = margo_create(admin->mid, address, admin->open_resource_id, &h);
-    if(ret != HG_SUCCESS)
+    hret = margo_create(admin->mid, address, admin->open_resource_id, &h);
+    if(hret != HG_SUCCESS)
         return ALPHA_ERR_FROM_MERCURY;
 
-    ret = margo_provider_forward(provider_id, h, &in);
-    if(ret != HG_SUCCESS) {
+    hret = margo_provider_forward(provider_id, h, &in);
+    if(hret != HG_SUCCESS) {
         margo_destroy(h);
         return ALPHA_ERR_FROM_MERCURY;
     }
 
-    ret = margo_get_output(h, &out);
-    if(ret != HG_SUCCESS) {
+    hret = margo_get_output(h, &out);
+    if(hret != HG_SUCCESS) {
         margo_destroy(h);
         return ALPHA_ERR_FROM_MERCURY;
     }
@@ -150,14 +154,14 @@ alpha_return_t alpha_close_resource(
         hg_addr_t address,
         uint16_t provider_id,
         const char* token,
-        const alpha_resource_id_t* id)
+        alpha_resource_id_t id)
 {
     hg_handle_t h;
     close_resource_in_t  in;
     close_resource_out_t out;
     hg_return_t ret;
 
-    memcpy(&in.id, id, sizeof(id));
+    memcpy(&in.id, &id, sizeof(id));
     in.token  = (char*)token;
 
     ret = margo_create(admin->mid, address, admin->close_resource_id, &h);
@@ -188,14 +192,14 @@ alpha_return_t alpha_destroy_resource(
         hg_addr_t address,
         uint16_t provider_id,
         const char* token,
-        const alpha_resource_id_t* id)
+        alpha_resource_id_t id)
 {
     hg_handle_t h;
     destroy_resource_in_t  in;
     destroy_resource_out_t out;
     hg_return_t ret;
 
-    memcpy(&in.id, id, sizeof(*id));
+    memcpy(&in.id, &id, sizeof(id));
     in.token  = (char*)token;
 
     ret = margo_create(admin->mid, address, admin->destroy_resource_id, &h);
@@ -229,5 +233,38 @@ alpha_return_t alpha_list_resources(
         alpha_resource_id_t* ids,
         size_t* count)
 {
-    // TODO
+    hg_handle_t h;
+    list_resources_in_t  in;
+    list_resources_out_t out;
+    alpha_return_t ret;
+    hg_return_t hret;
+
+    in.token  = (char*)token;
+    in.max_ids = *count;
+
+    hret = margo_create(admin->mid, address, admin->list_resources_id, &h);
+    if(hret != HG_SUCCESS)
+        return ALPHA_ERR_FROM_MERCURY;
+
+    hret = margo_provider_forward(provider_id, h, &in);
+    if(hret != HG_SUCCESS) {
+        margo_destroy(h);
+        return ALPHA_ERR_FROM_MERCURY;
+    }
+
+    hret = margo_get_output(h, &out);
+    if(hret != HG_SUCCESS) {
+        margo_destroy(h);
+        return ALPHA_ERR_FROM_MERCURY;
+    }
+
+    ret = out.ret;
+    if(ret == ALPHA_SUCCESS) {
+        *count = out.count;
+        memcpy(ids, out.ids, out.count*sizeof(*ids));
+    }
+    
+    margo_free_output(h, &out);
+    margo_destroy(h);
+    return ret;
 }

@@ -45,14 +45,44 @@ MERCURY_GEN_PROC(destroy_resource_out_t,
 
 MERCURY_GEN_PROC(list_resources_in_t,
         ((hg_string_t)(token))\
-        ((hg_bulk_t)(memory_handle))\
         ((hg_size_t)(max_ids)))
 
-MERCURY_GEN_PROC(list_resources_out_t,
-        ((int32_t)(ret))\
-        ((hg_size_t)(ids_count)))
+typedef struct list_resources_out_t {
+    int32_t ret;
+    hg_size_t count;
+    alpha_resource_id_t* ids;
+} list_resources_out_t;
+
+static inline hg_return_t hg_proc_list_resources_out_t(hg_proc_t proc, void *data)
+{
+    list_resources_out_t* out = (list_resources_out_t*)data;
+    hg_return_t ret;
+
+    ret = hg_proc_hg_int32_t(proc, &(out->ret));
+    if(ret != HG_SUCCESS) return ret;
+
+    ret = hg_proc_hg_size_t(proc, &(out->count));
+    if(ret != HG_SUCCESS) return ret;
+
+    switch(hg_proc_get_op(proc)) {
+    case HG_DECODE:
+        out->ids = (alpha_resource_id_t*)calloc(out->count, sizeof(*(out->ids)));
+        /* fall through */
+    case HG_ENCODE:
+        if(out->ids)
+            ret = hg_proc_memcpy(proc, out->ids, sizeof(*(out->ids))*out->count);
+        break;
+    case HG_FREE:
+        free(out->ids);
+        break;
+    }
+    return ret;
+}
 
 /* Client RPC types */
+
+MERCURY_GEN_PROC(hello_in_t,
+        ((alpha_resource_id_t)(resource_id)))
 
 MERCURY_GEN_PROC(sum_in_t,
         ((alpha_resource_id_t)(resource_id))\
@@ -60,10 +90,8 @@ MERCURY_GEN_PROC(sum_in_t,
         ((int32_t)(y)))
 
 MERCURY_GEN_PROC(sum_out_t,
+        ((int32_t)(result))\
         ((int32_t)(ret)))
-
-MERCURY_GEN_PROC(hello_in_t,
-        ((alpha_resource_id_t)(resource_id)))
 
 /* Extra hand-coded serialization functions */
 

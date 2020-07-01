@@ -10,6 +10,7 @@ typedef struct alpha_admin {
    hg_id_t           open_resource_id;
    hg_id_t           close_resource_id;
    hg_id_t           destroy_resource_id;
+   hg_id_t           list_resources_id;
 } alpha_admin;
 
 #endif

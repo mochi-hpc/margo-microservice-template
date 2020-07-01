@@ -12,6 +12,7 @@ static alpha_return_t beta_create_resource(
         const char* config,
         void** context)
 {
+    (void)provider;
     beta_context* ctx = (beta_context*)calloc(1, sizeof(*ctx));
     ctx->config = strdup(config);
     *context = (void*)ctx;
@@ -23,6 +24,7 @@ static alpha_return_t beta_open_resource(
         const char* config,
         void** context)
 {
+    (void)provider;
     beta_context* ctx = (beta_context*)calloc(1, sizeof(*ctx));
     ctx->config = strdup(config);
     *context = (void*)ctx;
@@ -54,6 +56,7 @@ static void beta_say_hello(void* ctx)
 
 static int32_t beta_compute_sum(void* ctx, int32_t x, int32_t y)
 {
+    (void)ctx;
     return x+y;
 }
 

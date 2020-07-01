@@ -19,6 +19,7 @@ typedef enum alpha_return_t {
     ALPHA_ERR_INVALID_RESOURCE,  /* Invalid resource id */
     ALPHA_ERR_INVALID_BACKEND,   /* Invalid backend type */
     ALPHA_ERR_INVALID_CONFIG,    /* Invalid configuration */
+    ALPHA_ERR_INVALID_TOKEN,     /* Invalid token */
     ALPHA_ERR_FROM_MERCURY,      /* Mercurt error */
     ALPHA_ERR_FROM_ARGOBOTS,     /* Argobots error */
     ALPHA_ERR_OP_UNSUPPORTED,    /* Unsupported operation */

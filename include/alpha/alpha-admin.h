@@ -93,7 +93,7 @@ alpha_return_t alpha_close_resource(
         hg_addr_t address,
         uint16_t provider_id,
         const char* token,
-        const alpha_resource_id_t* id);
+        alpha_resource_id_t id);
 
 /**
  * @brief Requests the provider to destroy a resource it is managing.
@@ -111,7 +111,7 @@ alpha_return_t alpha_destroy_resource(
         hg_addr_t address,
         uint16_t provider_id,
         const char* token,
-        const alpha_resource_id_t* id);
+        alpha_resource_id_t id);
 
 /**
  * @brief Lists the ids of resources available on the provider.

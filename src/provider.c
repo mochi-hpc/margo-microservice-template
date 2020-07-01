@@ -18,7 +18,8 @@ static inline alpha_return_t add_resource(
 
 static inline alpha_return_t remove_resource(
         alpha_provider_t provider,
-        const alpha_resource_id_t* id);
+        const alpha_resource_id_t* id,
+        int close_resource);
 
 static inline void remove_all_resources(
         alpha_provider_t provider);
@@ -32,22 +33,28 @@ static inline alpha_return_t add_backend_impl(
         alpha_provider_t provider,
         alpha_backend_impl* backend);
 
+/* Function to check the validity of the token sent by an admin
+ * (returns 0 is the token is incorrect) */
+static inline int check_token(
+        alpha_provider_t provider,
+        const char* token);
+
 /* Admin RPCs */
-static DECLARE_MARGO_RPC_HANDLER(alpha_create_resource_ult);
+static DECLARE_MARGO_RPC_HANDLER(alpha_create_resource_ult)
 static void alpha_create_resource_ult(hg_handle_t h);
-static DECLARE_MARGO_RPC_HANDLER(alpha_open_resource_ult);
+static DECLARE_MARGO_RPC_HANDLER(alpha_open_resource_ult)
 static void alpha_open_resource_ult(hg_handle_t h);
-static DECLARE_MARGO_RPC_HANDLER(alpha_close_resource_ult);
+static DECLARE_MARGO_RPC_HANDLER(alpha_close_resource_ult)
 static void alpha_close_resource_ult(hg_handle_t h);
-static DECLARE_MARGO_RPC_HANDLER(alpha_destroy_resource_ult);
+static DECLARE_MARGO_RPC_HANDLER(alpha_destroy_resource_ult)
 static void alpha_destroy_resource_ult(hg_handle_t h);
-static DECLARE_MARGO_RPC_HANDLER(alpha_list_resources_ult);
+static DECLARE_MARGO_RPC_HANDLER(alpha_list_resources_ult)
 static void alpha_list_resources_ult(hg_handle_t h);
 
 /* Client RPCs */
-static DECLARE_MARGO_RPC_HANDLER(alpha_hello_ult);
+static DECLARE_MARGO_RPC_HANDLER(alpha_hello_ult)
 static void alpha_hello_ult(hg_handle_t h);
-static DECLARE_MARGO_RPC_HANDLER(alpha_sum_ult);
+static DECLARE_MARGO_RPC_HANDLER(alpha_sum_ult)
 static void alpha_sum_ult(hg_handle_t h);
 
 /* add other RPC declarations here */
@@ -84,7 +91,7 @@ int alpha_provider_register(
     p->provider_id = provider_id;
     p->pool = pool;
     p->abtio = abtio;
-    p->token = token ? strdup(token) : NULL;
+    p->token = (token && strlen(token)) ? strdup(token) : NULL;
 
     /* Admin RPCs */
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_create_resource",
@@ -181,19 +188,62 @@ alpha_return_t alpha_provider_register_backend(
 
 static void alpha_create_resource_ult(hg_handle_t h)
 {
-    hg_return_t ret;
+    hg_return_t hret;
+    alpha_return_t ret;
     create_resource_in_t  in;
     create_resource_out_t out;
 
+    /* find the margo instance */
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
+    /* find the provider */
     const struct hg_info* info = margo_get_info(h);
     alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
 
-    ret = margo_get_input(h, &in);
+    /* deserialize the input */
+    hret = margo_get_input(h, &in);
+    if(hret != HG_SUCCESS) {
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+    
+    /* check the token sent by the admin */
+    if(!check_token(provider, in.token)) {
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
+        goto finish;
+    }
 
-    // TODO
+    /* find the backend implementation for the requested type */
+    alpha_backend_impl* backend = find_backend_impl(provider, in.type);
+    if(!backend) {
+        out.ret = ALPHA_ERR_INVALID_BACKEND;
+        goto finish;
+    }
 
+    /* create a uuid for the new resource */
+    alpha_resource_id_t id;
+    uuid_generate(id.uuid);
+
+    /* create the new resource's context */
+    void* context = NULL;
+    ret = backend->create_resource(provider, in.config, &context);
+    if(ret != ALPHA_SUCCESS) {
+        out.ret = ret;
+        goto finish;
+    }
+
+    /* allocate a resource, set it up, and add it to the provider */
+    alpha_resource* resource = (alpha_resource*)calloc(1, sizeof(*resource));
+    resource->fn  = backend;
+    resource->ctx = context;
+    resource->id  = id;
+    add_resource(provider, resource);
+
+    /* set the response */
+    out.ret = ALPHA_SUCCESS;
+    out.id = id;
+
+finish:
     ret = margo_respond(h, &out);
     ret = margo_free_input(h, &in);
     margo_destroy(h);
@@ -202,120 +252,266 @@ static DEFINE_MARGO_RPC_HANDLER(alpha_create_resource_ult)
 
 static void alpha_open_resource_ult(hg_handle_t h)
 {
-    hg_return_t ret;
+    hg_return_t hret;
+    alpha_return_t ret;
     open_resource_in_t  in;
     open_resource_out_t out;
 
+    /* find the margo instance */
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
+    /* find the provider */
     const struct hg_info* info = margo_get_info(h);
     alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
 
-    ret = margo_get_input(h, &in);
+    /* deserialize the input */
+    hret = margo_get_input(h, &in);
+    if(hret != HG_SUCCESS) {
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+    
+    /* check the token sent by the admin */
+    if(!check_token(provider, in.token)) {
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
+        goto finish;
+    }
 
-    // TODO
+    /* find the backend implementation for the requested type */
+    alpha_backend_impl* backend = find_backend_impl(provider, in.type);
+    if(!backend) {
+        out.ret = ALPHA_ERR_INVALID_BACKEND;
+        goto finish;
+    }
 
-    ret = margo_respond(h, &out);
-    ret = margo_free_input(h, &in);
+    /* create a uuid for the new resource */
+    alpha_resource_id_t id;
+    uuid_generate(id.uuid);
+
+    /* create the new resource's context */
+    void* context = NULL;
+    ret = backend->open_resource(provider, in.config, &context);
+    if(ret != ALPHA_SUCCESS) {
+        out.ret = ret;
+        goto finish;
+    }
+
+    /* allocate a resource, set it up, and add it to the provider */
+    alpha_resource* resource = (alpha_resource*)calloc(1, sizeof(*resource));
+    resource->fn  = backend;
+    resource->ctx = context;
+    resource->id  = id;
+    add_resource(provider, resource);
+
+    /* set the response */
+    out.ret = ALPHA_SUCCESS;
+    out.id = id;
+
+finish:
+    hret = margo_respond(h, &out);
+    hret = margo_free_input(h, &in);
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_open_resource_ult)
 
 static void alpha_close_resource_ult(hg_handle_t h)
 {
-    hg_return_t ret;
+    hg_return_t hret;
+    alpha_return_t ret;
     close_resource_in_t  in;
     close_resource_out_t out;
 
+    /* find the margo instance */
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
+    /* find the provider */
     const struct hg_info* info = margo_get_info(h);
     alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
 
-    ret = margo_get_input(h, &in);
+    /* deserialize the input */
+    hret = margo_get_input(h, &in);
+    if(hret != HG_SUCCESS) {
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
 
-    // TODO
+    /* check the token sent by the admin */
+    if(!check_token(provider, in.token)) {
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
+        goto finish;
+    }
 
-    ret = margo_respond(h, &out);
-    ret = margo_free_input(h, &in);
+    /* remove the resource from the provider 
+     * (its close function will be called) */
+    ret = remove_resource(provider, &in.id, 1);
+    out.ret = ret;
+
+finish:
+    hret = margo_respond(h, &out);
+    hret = margo_free_input(h, &in);
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_close_resource_ult)
 
 static void alpha_destroy_resource_ult(hg_handle_t h)
 {
-    hg_return_t ret;
+    hg_return_t hret;
     destroy_resource_in_t  in;
     destroy_resource_out_t out;
 
+    /* find the margo instance */
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
+    /* find the provider */
     const struct hg_info* info = margo_get_info(h);
     alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
 
-    ret = margo_get_input(h, &in);
+    /* deserialize the input */
+    hret = margo_get_input(h, &in);
+    if(hret != HG_SUCCESS) {
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
 
-    // TODO
+    /* check the token sent by the admin */
+    if(!check_token(provider, in.token)) {
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
+        goto finish;
+    }
 
-    ret = margo_respond(h, &out);
-    ret = margo_free_input(h, &in);
+    /* find the resource */
+    alpha_resource* resource = find_resource(provider, &in.id);
+    if(!resource) {
+        out.ret = ALPHA_ERR_INVALID_RESOURCE;
+        goto finish;
+    }
+
+    /* destroy the resource's context */
+    resource->fn->destroy_resource(resource->ctx);
+
+    /* remove the resource from the provider 
+     * (its close function will NOT be called) */
+    out.ret = remove_resource(provider, &in.id, 0);
+
+finish:
+    hret = margo_respond(h, &out);
+    hret = margo_free_input(h, &in);
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_destroy_resource_ult)
 
 static void alpha_list_resources_ult(hg_handle_t h)
 {
-    hg_return_t ret;
+    hg_return_t hret;
     list_resources_in_t  in;
     list_resources_out_t out;
+    out.ids = NULL;
 
+    /* find margo instance */
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
+    /* find provider */
     const struct hg_info* info = margo_get_info(h);
     alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
 
-    ret = margo_get_input(h, &in);
+    /* deserialize the input */
+    hret = margo_get_input(h, &in);
+    if(hret != HG_SUCCESS) {
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
 
-    // TODO
+    /* check the token sent by the admin */
+    if(!check_token(provider, in.token)) {
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
+        goto finish;
+    }
 
-    ret = margo_respond(h, &out);
-    ret = margo_free_input(h, &in);
+    /* allocate array of resource ids */
+    out.ret   = ALPHA_SUCCESS;
+    out.count = provider->num_resources < in.max_ids ? provider->num_resources : in.max_ids;
+    out.ids   = (alpha_resource_id_t*)calloc(provider->num_resources, sizeof(*out.ids));
+
+    /* iterate over the hash of resources to fill the array of resource ids */
+    unsigned i = 0;
+    alpha_resource *r, *tmp;
+    HASH_ITER(hh, provider->resources, r, tmp) {
+        out.ids[i++] = r->id;
+    }
+
+finish:
+    hret = margo_respond(h, &out);
+    hret = margo_free_input(h, &in);
+    free(out.ids);
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_list_resources_ult)
 
 static void alpha_hello_ult(hg_handle_t h)
 {
-    hg_return_t ret;
+    hg_return_t hret;
+    hello_in_t in;
+
+    /* find margo instance */
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
+    /* find provider */
     const struct hg_info* info = margo_get_info(h);
     alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
 
-    printf("Hello World!\n");
+    /* deserialize the input */
+    hret = margo_get_input(h, &in);
+    if(hret != HG_SUCCESS) {
+        goto finish;
+    }
 
+    /* find the resource */
+    alpha_resource* resource = find_resource(provider, &in.resource_id);
+    if(!resource) {
+        goto finish;
+    }
+
+    /* call hello on the resource's context */
+    resource->fn->hello(resource->ctx);
+
+finish:
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_hello_ult)
 
 static void alpha_sum_ult(hg_handle_t h)
 {
-    hg_return_t ret;
+    hg_return_t hret;
     sum_in_t     in;
     sum_out_t   out;
 
+    /* find the margo instance */
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
+    /* find the provider */
     const struct hg_info* info = margo_get_info(h);
     alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
 
-    ret = margo_get_input(h, &in);
+    /* deserialize the input */
+    hret = margo_get_input(h, &in);
+    if(hret != HG_SUCCESS) {
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
 
-    out.ret = in.x + in.y;
-    printf("Computed %d + %d = %d\n",in.x,in.y,out.ret);
+    /* find the resource */
+    alpha_resource* resource = find_resource(provider, &in.resource_id);
+    if(!resource) {
+        out.ret = ALPHA_ERR_INVALID_RESOURCE;
+        goto finish;
+    }
 
-    ret = margo_respond(h, &out);
-    ret = margo_free_input(h, &in);
+    /* call hello on the resource's context */
+    out.result = resource->fn->sum(resource->ctx, in.x, in.y);
+
+finish:
+    hret = margo_respond(h, &out);
+    hret = margo_free_input(h, &in);
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_sum_ult)
@@ -338,21 +534,27 @@ static inline alpha_return_t add_resource(
         return ALPHA_ERR_INVALID_RESOURCE;
     }
     HASH_ADD(hh, provider->resources, id, sizeof(alpha_resource_id_t), resource);
+    provider->num_resources += 1;
     return ALPHA_SUCCESS;
 }
 
 static inline alpha_return_t remove_resource(
         alpha_provider_t provider,
-        const alpha_resource_id_t* id)
+        const alpha_resource_id_t* id,
+        int close_resource)
 {
     alpha_resource* resource = find_resource(provider, id);
     if(!resource) {
         return ALPHA_ERR_INVALID_RESOURCE;
     }
-    resource->fn->close_resource(resource->ctx);
+    alpha_return_t ret = ALPHA_SUCCESS;
+    if(close_resource) {
+        ret = resource->fn->close_resource(resource->ctx);
+    }
     HASH_DEL(provider->resources, resource);
     free(resource);
-    return ALPHA_SUCCESS;
+    provider->num_resources -= 1;
+    return ret;
 }
 
 static inline void remove_all_resources(
@@ -364,6 +566,7 @@ static inline void remove_all_resources(
         r->fn->close_resource(r->ctx);
         free(r);
     }
+    provider->num_resources = 0;
 }
 
 static inline alpha_backend_impl* find_backend_impl(
@@ -390,3 +593,10 @@ static inline alpha_return_t add_backend_impl(
     return ALPHA_SUCCESS;
 }
 
+static inline int check_token(
+        alpha_provider_t provider,
+        const char* token)
+{
+    if(!provider->token) return 1;
+    return !strcmp(provider->token, token);
+}

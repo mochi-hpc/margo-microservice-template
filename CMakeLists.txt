@@ -2,8 +2,10 @@ cmake_minimum_required (VERSION 3.8)
 project (alpha C) # add CXX if needed
 enable_testing ()
 
-option(ENABLE_TESTS    "Build tests" OFF)
-option(ENABLE_EXAMPLES "Build examples" OFF)
+add_definitions (-g -Wextra -Wall -Wpedantic)
+
+option (ENABLE_TESTS    "Build tests" OFF)
+option (ENABLE_EXAMPLES "Build examples" OFF)
 
 # add our cmake module directory to the path
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}

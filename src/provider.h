@@ -24,6 +24,7 @@ typedef struct alpha_provider {
     /* Resources and backend types */
     size_t               num_backend_types; // number of backend types
     alpha_backend_impl** backend_types;     // array of pointers to backend types
+    size_t               num_resources;     // number of resources
     alpha_resource*      resources;         // hash of resources by uuid
     /* RPC identifiers for admins */
     hg_id_t create_resource_id;

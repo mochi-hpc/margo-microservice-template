@@ -4,8 +4,6 @@
 
 alpha_return_t alpha_client_init(margo_instance_id mid, alpha_client_t* client)
 {
-    int ret = ALPHA_SUCCESS;
-
     alpha_client_t c = (alpha_client_t)calloc(1, sizeof(*c));
     if(!c) return ALPHA_ERR_ALLOCATION;
 
@@ -32,7 +30,7 @@ alpha_return_t alpha_client_finalize(alpha_client_t client)
 {
     if(client->num_resource_handles != 0) {
         fprintf(stderr,  
-                "Warning: %d resource handles not released when alpha_client_finalize was called\n",
+                "Warning: %ld resource handles not released when alpha_client_finalize was called\n",
                 client->num_resource_handles);
     }
     free(client);
@@ -62,6 +60,7 @@ alpha_return_t alpha_resource_handle_create(
 
     rh->client      = client;
     rh->provider_id = provider_id;
+    rh->resource_id = resource_id;
     rh->refcount    = 1;
 
     client->num_resource_handles += 1;
