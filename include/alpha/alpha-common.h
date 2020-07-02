@@ -34,6 +34,31 @@ typedef struct alpha_resource_id_t {
     uuid_t uuid;
 } alpha_resource_id_t;
 
+/**
+ * @brief Converts a alpha_resource_id_t into a string.
+ *
+ * @param id Id to convert
+ * @param out[37] Resulting null-terminated string
+ */
+static inline void alpha_resource_id_to_string(
+        alpha_resource_id_t id,
+        char out[37]) {
+    uuid_unparse(id.uuid, out);
+}
+
+/**
+ * @brief Converts a string into a alpha_resource_id_t. The string
+ * should be a 36-characters string + null terminator.
+ *
+ * @param in input string
+ * @param id resulting id
+ */
+static inline void alpha_resource_id_from_string(
+        const char* in,
+        alpha_resource_id_t* id) {
+    uuid_parse(in, id->uuid);
+}
+
 #ifdef __cplusplus
 }
 #endif

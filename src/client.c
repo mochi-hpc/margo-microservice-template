@@ -122,31 +122,35 @@ alpha_return_t alpha_compute_sum(
     hg_handle_t   h;
     sum_in_t     in;
     sum_out_t   out;
-    hg_return_t ret;
+    hg_return_t hret;
+    alpha_return_t ret;
 
     memcpy(&in.resource_id, &(handle->resource_id), sizeof(in.resource_id));
     in.x = x;
     in.y = y;
 
-    ret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
-    if(ret != HG_SUCCESS)
+    hret = margo_create(handle->client->mid, handle->addr, handle->client->sum_id, &h);
+    if(hret != HG_SUCCESS)
         return ALPHA_ERR_FROM_MERCURY;
 
-    ret = margo_provider_forward(handle->provider_id, h, &in);
-    if(ret != HG_SUCCESS) {
-        margo_destroy(h);
-        return ALPHA_ERR_FROM_MERCURY;
+    hret = margo_provider_forward(handle->provider_id, h, &in);
+    if(hret != HG_SUCCESS) {
+        ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
     }
 
-    ret = margo_get_output(h, &out);
-    if(ret != HG_SUCCESS) {
-        margo_destroy(h);
-        return ALPHA_ERR_FROM_MERCURY;
+    hret = margo_get_output(h, &out);
+    if(hret != HG_SUCCESS) {
+        ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
     }
 
-    *result = out.ret;
+    ret = out.ret;
+    if(ret == ALPHA_SUCCESS)
+        *result = out.result;
 
+finish:
     margo_free_output(h, &out);
     margo_destroy(h);
-    return ALPHA_SUCCESS;
+    return ret;
 }

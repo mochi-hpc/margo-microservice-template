@@ -258,7 +258,9 @@ static void alpha_create_resource_ult(hg_handle_t h)
     out.ret = ALPHA_SUCCESS;
     out.id = id;
 
-    LOG_INFO("Created resource of type \"%s\"", in.type);
+    char id_str[37];
+    alpha_resource_id_to_string(id, id_str);
+    LOG_DEBUG("Created resource %s of type \"%s\"", id_str, in.type);
 
 finish:
     ret = margo_respond(h, &out);
@@ -291,16 +293,16 @@ static void alpha_open_resource_ult(hg_handle_t h)
     
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
-        out.ret = ALPHA_ERR_INVALID_TOKEN;
         LOG_ERROR("Invalid token");
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
         goto finish;
     }
 
     /* find the backend implementation for the requested type */
     alpha_backend_impl* backend = find_backend_impl(provider, in.type);
     if(!backend) {
-        out.ret = ALPHA_ERR_INVALID_BACKEND;
         LOG_ERROR("Could not find backend of type \"%s\"", in.type);
+        out.ret = ALPHA_ERR_INVALID_BACKEND;
         goto finish;
     }
 
@@ -312,6 +314,7 @@ static void alpha_open_resource_ult(hg_handle_t h)
     void* context = NULL;
     ret = backend->open_resource(provider, in.config, &context);
     if(ret != ALPHA_SUCCESS) {
+        LOG_ERROR("Backend failed to open resource");
         out.ret = ret;
         goto finish;
     }
@@ -327,7 +330,9 @@ static void alpha_open_resource_ult(hg_handle_t h)
     out.ret = ALPHA_SUCCESS;
     out.id = id;
 
-    LOG_INFO("Opened resource of type \"%s\"", in.type);
+    char id_str[37];
+    alpha_resource_id_to_string(id, id_str);
+    LOG_DEBUG("Created resource %s of type \"%s\"", id_str, in.type);
 
 finish:
     hret = margo_respond(h, &out);
@@ -360,8 +365,8 @@ static void alpha_close_resource_ult(hg_handle_t h)
 
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
-        out.ret = ALPHA_ERR_INVALID_TOKEN;
         LOG_ERROR("Invalid token");
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
         goto finish;
     }
 
@@ -370,7 +375,9 @@ static void alpha_close_resource_ult(hg_handle_t h)
     ret = remove_resource(provider, &in.id, 1);
     out.ret = ret;
 
-    LOG_INFO("Removed resource");
+    char id_str[37];
+    alpha_resource_id_to_string(in.id, id_str);
+    LOG_DEBUG("Removed resource with id %s", id_str);
 
 finish:
     hret = margo_respond(h, &out);
@@ -402,16 +409,16 @@ static void alpha_destroy_resource_ult(hg_handle_t h)
 
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
-        out.ret = ALPHA_ERR_INVALID_TOKEN;
         LOG_ERROR("Invalid token");
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
         goto finish;
     }
 
     /* find the resource */
     alpha_resource* resource = find_resource(provider, &in.id);
     if(!resource) {
-        out.ret = ALPHA_ERR_INVALID_RESOURCE;
         LOG_ERROR("Could not find resource");
+        out.ret = ALPHA_ERR_INVALID_RESOURCE;
         goto finish;
     }
 
@@ -423,10 +430,13 @@ static void alpha_destroy_resource_ult(hg_handle_t h)
     out.ret = remove_resource(provider, &in.id, 0);
 
     if(out.ret == ALPHA_SUCCESS) {
-        LOG_DEBUG("Destroyed resource");
+        char id_str[37];
+        alpha_resource_id_to_string(in.id, id_str);
+        LOG_DEBUG("Destroyed resource with id %s", id_str);
     } else {
         LOG_ERROR("Could not destroy resource, resource may be left in an invalid state");
     }
+
 
 finish:
     hret = margo_respond(h, &out);
@@ -459,8 +469,8 @@ static void alpha_list_resources_ult(hg_handle_t h)
 
     /* check the token sent by the admin */
     if(!check_token(provider, in.token)) {
-        out.ret = ALPHA_ERR_INVALID_TOKEN;
         LOG_ERROR("Invalid token");
+        out.ret = ALPHA_ERR_INVALID_TOKEN;
         goto finish;
     }
 
@@ -546,13 +556,14 @@ static void alpha_sum_ult(hg_handle_t h)
     /* find the resource */
     alpha_resource* resource = find_resource(provider, &in.resource_id);
     if(!resource) {
-        out.ret = ALPHA_ERR_INVALID_RESOURCE;
         LOG_ERROR("Could not find requested resource");
+        out.ret = ALPHA_ERR_INVALID_RESOURCE;
         goto finish;
     }
 
     /* call hello on the resource's context */
     out.result = resource->fn->sum(resource->ctx, in.x, in.y);
+    out.ret = ALPHA_SUCCESS;
 
     LOG_DEBUG("Called sum RPC");
 
