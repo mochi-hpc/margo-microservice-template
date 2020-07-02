@@ -3,7 +3,7 @@ spack:
   - cmake
   - pkg-config
   - libuuid
-  - json-c 
   - mochi-margo
   - mochi-abt-io
+  - jansson
   concretization: together

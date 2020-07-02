@@ -24,6 +24,7 @@ typedef enum alpha_return_t {
     ALPHA_ERR_FROM_ARGOBOTS,     /* Argobots error */
     ALPHA_ERR_OP_UNSUPPORTED,    /* Unsupported operation */
     ALPHA_ERR_OP_FORBIDDEN,      /* Forbidden operation */
+    /* ... TODO add more error codes here if needed */
     ALPHA_ERR_OTHER              /* Other error */
 } alpha_return_t;
 

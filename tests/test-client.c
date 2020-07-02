@@ -16,6 +16,7 @@ struct test_context {
 
 static const char* token = "ABCDEFGH";
 static const uint16_t provider_id = 42;
+static const char* backend_config = "{ \"foo\" : \"bar\" }";
 
 static void* test_context_setup(const MunitParameter params[], void* user_data)
 {
@@ -43,7 +44,8 @@ static void* test_context_setup(const MunitParameter params[], void* user_data)
     ret = alpha_admin_init(mid, &admin);
     munit_assert_int(ret, ==, ALPHA_SUCCESS);
     // create a resource using the admin
-    ret = alpha_create_resource(admin, addr, provider_id, token, "dummy", "", &id);
+    ret = alpha_create_resource(admin, addr,
+            provider_id, token, "dummy", backend_config, &id);
     munit_assert_int(ret, ==, ALPHA_SUCCESS);
     // create test context
     struct test_context* context = (struct test_context*)calloc(1, sizeof(*context));

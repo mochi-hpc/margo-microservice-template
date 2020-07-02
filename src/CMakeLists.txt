@@ -28,7 +28,8 @@ add_library (alpha-server ${server-src-files} ${dummy-src-files})
 target_link_libraries (alpha-server
     PkgConfig::MARGO
     PkgConfig::ABTIO
-    PkgConfig::UUID)
+    PkgConfig::UUID
+    PkgConfig::JANSSON)
 target_include_directories (alpha-server PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-server BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)

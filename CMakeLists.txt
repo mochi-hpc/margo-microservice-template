@@ -37,6 +37,8 @@ pkg_check_modules (MARGO REQUIRED IMPORTED_TARGET margo)
 pkg_check_modules (UUID REQUIRED IMPORTED_TARGET uuid)
 # comment if you don't need abt-io
 pkg_check_modules (ABTIO REQUIRED IMPORTED_TARGET abt-io)
+# search for jansson
+pkg_check_modules (JANSSON REQUIRED IMPORTED_TARGET jansson)
 
 # library version set here (e.g. for shared libs).
 set (ALPHA_VERSION_MAJOR 0)
