@@ -4,7 +4,7 @@
 #include "logging.h"
 
 // backends that we want to add at compile time
-#include "beta/beta-backend.h"
+#include "dummy/dummy-backend.h"
 
 static void alpha_finalize_provider(void* p);
 
@@ -136,6 +136,7 @@ int alpha_provider_register(
             alpha_hello_ult, provider_id, pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->hello_id = id;
+    margo_registered_disable_response(mid, id, HG_TRUE);
 
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_sum",
             sum_in_t, sum_out_t,
@@ -147,7 +148,7 @@ int alpha_provider_register(
     /* ... */
 
     /* add backends available at compiler time (e.g. default/dummy backends) */
-    alpha_provider_register_beta_backend(p); // function from "beta/beta-backend.h"
+    alpha_provider_register_dummy_backend(p); // function from "dummy/dummy-backend.h"
 
     margo_provider_push_finalize_callback(mid, p, &alpha_finalize_provider, p);
 

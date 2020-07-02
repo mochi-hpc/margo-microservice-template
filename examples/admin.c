@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     LOG_INFO("Creating resource");
     ret = alpha_create_resource(admin, svr_addr, provider_id, NULL,
-                                "beta", "This is a config", &id);
+                                "dummy", "This is a config", &id);
     if(ret != ALPHA_SUCCESS) {
         LOG_FATAL("alpha_create_resource failed (ret = %d)", ret);
     }

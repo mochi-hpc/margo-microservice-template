@@ -11,8 +11,8 @@ set (admin-src-files
 set (logging-src-files
      logging/log.c)
 
-set (beta-src-files
-     beta/beta-backend.c)
+set (dummy-src-files
+     dummy/dummy-backend.c)
 
 # load package helper for generating cmake CONFIG packages
 include (CMakePackageConfigHelpers)
@@ -24,7 +24,7 @@ set (alpha-pkg "share/cmake/alpha")
 set (alpha-vers "${ALPHA_VERSION_MAJOR}.${ALPHA_VERSION_MINOR}")
 
 # server library
-add_library (alpha-server ${server-src-files} ${beta-src-files})
+add_library (alpha-server ${server-src-files} ${dummy-src-files})
 target_link_libraries (alpha-server
     PkgConfig::MARGO
     PkgConfig::ABTIO
