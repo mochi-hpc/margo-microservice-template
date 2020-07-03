@@ -125,8 +125,16 @@ Building the project
 --------------------
 
 The project's dependencies may be build using [spack](https://spack.readthedocs.io/en/latest/).
-The easiest way is to create a spack environment using the _spack.yaml_ file located
-at the root of the project, as follows.
+You will need to have setup [sds-repo](https://xgitlab.cels.anl.gov/sds/sds-repo) as external
+namespace, which can be done as follows.
+
+```
+git clone git@xgitlab.cels.anl.gov:sds/sds-repo.git
+spack repo add sds-repo
+```
+
+The easiest way to setup the dependencies for this project is to create a spack environment
+using the _spack.yaml_ file located at the root of the project, as follows.
 
 ```
 # create an anonymous environment
