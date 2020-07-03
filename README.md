@@ -44,7 +44,7 @@ The typical design of a Mochi microservice revolves around three libraries:
   pairs, a resource may be a database. The functionnalities of a provider may
   be enabled by multiple **backends**. For example, a database may be implemented
   using LevelDB, BerkeleyDB, or simply using an in-memory hash table.
-  Programs sending requests to a provider should be anaware of the backend used
+  Programs sending requests to a provider should **not** be anaware of the backend used
   to implement the requested functionality. This allows multiple backends to be
   tested, and for backends to evolve independently from user applications.
 * The client library is the library through which user applications interact with
@@ -64,7 +64,8 @@ The typical design of a Mochi microservice revolves around three libraries:
   library as the set of features you would want to provide to the person or
   application that sets up the service, rather than the person or application
   that uses its functionalities. Admin functions will generally use a security
-  token when interacting with the provider.
+  token when interacting with the provider (though this is a very rudimentary way
+  of preventing bad behaviors, since connections themselves are not encrypted).
 
 
 Organization of this template project
@@ -80,13 +81,14 @@ Functions, types, files, and libraries therefore use the **alpha** prefix.
 The first step in setting up this project for your microservice will be
 to replace this prefix. The generic name **resource** should also be
 replaced with a more specific name, such as **database**. This renaming
-step can be done by using the `setup.py` script at the root (see next section).
+step can be done by using the _setup.py_ script at the root of this repository
+(see next section).
 
 The _include_ directory of this template project provides public header files.
 * _alpha/alpha-common.h_ contains APIs that are common to the three
   libraries, such as error codes or common types;
 * _alpha/alpha-client.h_ contains the client-side functions to create
-  destroy a client object;
+  and destroy a client object;
 * _alpha/alpha-resource.h_ contains the client-side functions to create
   and destroy resource handles, and to interact with a resource through
   a resource handle;
@@ -101,21 +103,26 @@ The _include_ directory of this template project provides public header files.
 The implementation of all these functions is located in the _src_ directory.
 The source also includes functionalities such as a small header-based logging library.
 The _src/dummy_ directory provides a default implementation of a backend. This
-backend also exemplifies the use of a [jansson](https://digip.org/jansson/) library
-for resource configuration.
+backend also exemplifies the use of the [jansson](https://digip.org/jansson/) library
+for JSON-based resource configuration. We recommend that you implement a dummy backend for your
+service, as a way of testing application logic and RPCs without the burdon of complex
+external dependencies. For instance, a dummy backend may be a backend that simply
+acknowledges requests but does not process them, or provides mock results.
 
 The _examples_ directory contains an example using the microservice:
 the server example will start a provider and print its address (if logging was enabled).
 The admin example will connect to this provider and have it create a resource, then
 print the resource id. The client example can be run next to interact with the resource.
 
-The _tests_ directory contains a set of unit tests
-It relies on [µnit](https://nemequ.github.io/munit), a C unit-test library under
-an MIT license. Feel free to continue using it as you add more functionalities
-to your microservice, unit-testing is just good software development practice!
+The _tests_ directory contains a set of unit tests for your service.
+It relies on [µnit](https://nemequ.github.io/munit) (included in this repository),
+a C unit-test library under an MIT license. Feel free to continue using it as you
+add more functionalities to your microservice; unit-testing is just good software
+development practice in general.
 
 The template also contains a _spack.yaml_ file at its root that can be used to
-install its dependencies.
+install its dependencies. You may add additional dependencies into this file as
+your microservice gets more complex.
 
 As you modify this project to implement your own microservice, feel free to remove
 any dependencies you don't like (such as jansson or µnit) and adapt it to your needs!
@@ -132,7 +139,7 @@ shows how to setup your project:
 git clone https://xgitlab.cels.anl.gov/sds/templates/margo-microservice-template.git
 mv margo-microservice-template yellow
 cd yellow
-rm -rf .gitignore
+rm -rf .git
 python setup.py
 $ Enter the name of your service: yellow
 $ Enter the name of the resources (e.g., database): phonebook
@@ -146,9 +153,10 @@ Building the project
 
 The project's dependencies may be build using [spack](https://spack.readthedocs.io/en/latest/).
 You will need to have setup [sds-repo](https://xgitlab.cels.anl.gov/sds/sds-repo) as external
-namespace, which can be done as follows.
+namespace for spack, which can be done as follows.
 
 ```
+# from outside of your project directory
 git clone git@xgitlab.cels.anl.gov:sds/sds-repo.git
 spack repo add sds-repo
 ```
