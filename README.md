@@ -80,7 +80,7 @@ Functions, types, files, and libraries therefore use the **alpha** prefix.
 The first step in setting up this project for your microservice will be
 to replace this prefix. The generic name **resource** should also be
 replaced with a more specific name, such as **database**. This renaming
-step can be done by using the `setup.py` script at the root.
+step can be done by using the `setup.py` script at the root (see next section).
 
 The _include_ directory of this template project provides public header files.
 * _alpha/alpha-common.h_ contains APIs that are common to the three
@@ -121,6 +121,26 @@ As you modify this project to implement your own microservice, feel free to remo
 any dependencies you don't like (such as jansson or µnit) and adapt it to your needs!
 
 
+Setting up your project
+-----------------------
+
+Let's assume you want to create a microservice called "yellow", which manages
+a phone directory (association between names and phone numbers). The following
+shows how to setup your project:
+
+```
+git clone https://xgitlab.cels.anl.gov/sds/templates/margo-microservice-template.git
+mv margo-microservice-template yellow
+cd yellow
+rm -rf .gitignore
+python setup.py
+$ Enter the name of your service: yellow
+$ Enter the name of the resources (e.g., database): phonebook
+```
+
+The python script will edit and rename all the files, replacing _alpha_ with _yellow_
+and _resource_ with _phonebook_.
+
 Building the project
 --------------------
 
@@ -158,7 +178,7 @@ Once the dependencies have been installed, you may build the project as follows.
 ```
 mkdir build
 cd build
-cmake .. -DALPHA_LOG_INFO=ON -DENABLE_TESTS=ON -DENABLE_EXAMPLES=ON
+cmake .. -DENABLE_LOG_INFO=ON -DENABLE_LOG_ERROR=ON -DENABLE_LOG_DEBUG=ON -DENABLE_TESTS=ON -DENABLE_EXAMPLES=ON
 make
 ```
 

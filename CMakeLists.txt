@@ -7,9 +7,10 @@ add_definitions (-g -Wextra -Wall -Wpedantic)
 option (ENABLE_TESTS    "Build tests" OFF)
 option (ENABLE_EXAMPLES "Build examples" OFF)
 
-option (ALPHA_LOG_DEBUG "Enable logging debug messages" OFF)
-option (ALPHA_LOG_INFO  "Enable logging info messages" OFF)
-option (ALPHA_LOG_ERROR "Enable logging error messages" OFF)
+option (ENABLE_LOG_DEBUG "Enable logging debug messages" OFF)
+option (ENABLE_LOG_INFO  "Enable logging info messages" ON)
+option (ENABLE_LOG_ERROR "Enable logging error messages" ON)
+option (ENABLE_LOG_COLORS "Enable colors when logging" OFF)
 
 # add our cmake module directory to the path
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}

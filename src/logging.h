@@ -9,7 +9,7 @@
 
 #include "config.h"
 
-#ifdef ALPHA_LOGGING_ENABLE_COLORS
+#ifdef ENABLE_LOG_COLORS
 #define RED    "\033[0;31m"
 #define GREEN  "\033[0;32m"
 #define YELLOW "\033[0;33m"
@@ -38,7 +38,7 @@ static inline void log_format(
 static inline void log_error(
         const char* file, int line,
         const char* message, ...) {
-#ifdef ALPHA_LOG_ERROR
+#ifdef ENABLE_LOG_ERROR
     va_list args;
     va_start(args, message);
     log_format(file, line, YELLOW "ERROR" RESET, message, args);
@@ -63,7 +63,7 @@ static inline void log_fatal(
 static inline void log_info(
         const char* file, int line,
         const char* message, ...) {
-#ifdef ALPHA_LOG_INFO
+#ifdef ENABLE_LOG_INFO
     va_list args;
     va_start(args, message);
     log_format(file, line, GREEN "INFO" RESET, message, args);
@@ -78,7 +78,7 @@ static inline void log_info(
 static inline void log_debug(
         const char* file, int line,
         const char* message, ...) {
-#ifdef ALPHA_LOG_DEBUG
+#ifdef ENABLE_LOG_DEBUG
     va_list args;
     va_start(args, message);
     log_format(file, line, BLUE "DEBUG" RESET, message, args);
