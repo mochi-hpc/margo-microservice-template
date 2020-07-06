@@ -1,3 +1,8 @@
+/*
+ * (C) 2020 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #ifndef __PROVIDER_H
 #define __PROVIDER_H
 

@@ -1,3 +1,8 @@
+/*
+ * (C) 2020 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #ifndef __ALPHA_ADMIN_H
 #define __ALPHA_ADMIN_H
 

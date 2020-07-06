@@ -1,3 +1,8 @@
+/*
+ * (C) 2020 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #include "types.h"
 #include "client.h"
 #include "alpha/alpha-client.h"

@@ -1,3 +1,8 @@
+/*
+ * (C) 2020 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #include "alpha/alpha-server.h"
 #include "provider.h"
 #include "types.h"

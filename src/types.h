@@ -1,3 +1,8 @@
+/*
+ * (C) 2020 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #ifndef _PARAMS_H
 #define _PARAMS_H
 

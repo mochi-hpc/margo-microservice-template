@@ -1,3 +1,8 @@
+/*
+ * (C) 2020 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #include <string.h>
 #include <jansson.h>
 #include "alpha/alpha-backend.h"
