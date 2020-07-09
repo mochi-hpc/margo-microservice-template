@@ -8,9 +8,6 @@ set (client-src-files
 set (admin-src-files
      admin.c)
 
-set (logging-src-files
-     logging/log.c)
-
 set (dummy-src-files
      dummy/dummy-backend.c)
 
