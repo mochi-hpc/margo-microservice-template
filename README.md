@@ -63,10 +63,7 @@ The typical design of a Mochi microservice revolves around three libraries:
   resources, their migration, etc. It can be useful to think of the admin
   library as the set of features you would want to provide to the person or
   application that sets up the service, rather than the person or application
-  that uses its functionalities. Admin functions will generally use a security
-  token when interacting with the provider (though this is a very rudimentary way
-  of preventing bad behaviors, since connections themselves are not encrypted).
-
+  that uses its functionalities.
 
 Organization of this template project
 -------------------------------------
