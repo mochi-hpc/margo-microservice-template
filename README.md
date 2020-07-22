@@ -38,41 +38,38 @@ The typical design of a Mochi microservice revolves around three libraries:
 
 * The server library contains a service **provider**, that is, an object that
   can receive some predefined RPCs to offer a particular functionality. Within
-  the same process, multiple providers of the same service may be instanciated,
+  the same process, multiple providers of the same service may be instantiated,
   using distinct **provider ids** (`uint16_t`). A provider is responsible for
   managing a set of **resources**. In the example of a storage for key/value
-  pairs, a resource may be a database. The functionnalities of a provider may
+  pairs, a resource may be a database. The functionalities of a provider may
   be enabled by multiple **backends**. For example, a database may be implemented
   using LevelDB, BerkeleyDB, or simply using an in-memory hash table.
-  Programs sending requests to a provider should **not** be anaware of the backend used
+  Programs sending requests to a provider should **not** be unaware of the backend used
   to implement the requested functionality. This allows multiple backends to be
   tested, and for backends to evolve independently from user applications.
-* The client library is the library through which user applications interact with
-  providers. It will typically provider a **client** structure that is used to
-  register the set of RPCs that can be invoked, and a **resource handle** structure
-  that aims to mirror a particular resource located on a particular provider.
-  User applications will typically initialize a singe client object for a service,
-  and from this client object instanciate as many resource handles as needed to
-  interact with available resources. Resources are identified by a **resource id**,
-  which are generally either a name, an integer, or a 
-  [uuid](https://en.wikipedia.org/wiki/Universally_unique_identifier)
-  (this template project uses uuids).
+* The client library is the library through which user applications or higher-level
+  services interact with providers. It will typically provide a **client** structure
+  that is used to register the set of RPCs that can be invoked, and a **resource handle**
+  structure that references a particular resource located on a particular provider.
+  User applications will typically initialize a singe client object for a service, and
+  from this client object instantiate as many resource handles as needed to interact with
+  available resources. Resources are identified by a **resource id**, which are generally
+  either a name, an integer, or a
+  [uuid](https://en.wikipedia.org/wiki/Universally_unique_identifier) (this template
+  project uses uuids).
 * The admin library is the library through which a user application can send
   requests that are meant for the provider itself rather than for a resource.
   A few most common such requests include the creation and destruction of
   resources, their migration, etc. It can be useful to think of the admin
   library as the set of features you would want to provide to the person or
   application that sets up the service, rather than the person or application
-  that uses its functionalities. Admin functions will generally use a security
-  token when interacting with the provider (though this is a very rudimentary way
-  of preventing bad behaviors, since connections themselves are not encrypted).
-
+  that uses its functionalities.
 
 Organization of this template project
 -------------------------------------
 
 This template project illustrates how a Margo-based microservice could
-be architectured. It can be compiled as-is, and provides a couple of
+be architected. It can be compiled as-is, and provides a couple of
 functionalities that make the provider print a "Hello World" message
 on its standard output, or compute the sum of two integers.
 
@@ -105,7 +102,7 @@ The source also includes functionalities such as a small header-based logging li
 The _src/dummy_ directory provides a default implementation of a backend. This
 backend also exemplifies the use of the [jansson](https://digip.org/jansson/) library
 for JSON-based resource configuration. We recommend that you implement a dummy backend for your
-service, as a way of testing application logic and RPCs without the burdon of complex
+service, as a way of testing application logic and RPCs without the burden of complex
 external dependencies. For instance, a dummy backend may be a backend that simply
 acknowledges requests but does not process them, or provides mock results.
 
