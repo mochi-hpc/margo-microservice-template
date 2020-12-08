@@ -6,7 +6,7 @@
 #include <string.h>
 #include <json-c/json.h>
 #include "alpha/alpha-backend.h"
-#include "../logging.h"
+#include "../provider.h"
 #include "dummy-backend.h"
 
 typedef struct dummy_context {
@@ -31,7 +31,7 @@ static alpha_return_t dummy_create_resource(
                 strlen(config_str));
         if (!config) {
             jerr = json_tokener_get_error(tokener);
-            LOG_ERROR(0, "JSON parse error: %s",
+            margo_error(provider->mid, "JSON parse error: %s",
                       json_tokener_error_desc(jerr));
             json_tokener_free(tokener);
             return ALPHA_ERR_INVALID_CONFIG;
@@ -66,7 +66,7 @@ static alpha_return_t dummy_open_resource(
                 strlen(config_str));
         if (!config) {
             jerr = json_tokener_get_error(tokener);
-            LOG_ERROR(0, "JSON parse error: %s",
+            margo_error(provider->mid, "JSON parse error: %s",
                       json_tokener_error_desc(jerr));
             json_tokener_free(tokener);
             return ALPHA_ERR_INVALID_CONFIG;

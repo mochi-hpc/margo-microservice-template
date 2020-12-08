@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include <stdio.h>
@@ -10,7 +10,6 @@
 #include <alpha/alpha-client.h>
 #include <alpha/alpha-resource.h>
 #include "munit/munit.h"
-#include "../src/logging.h"
 
 struct test_context {
     margo_instance_id   mid;

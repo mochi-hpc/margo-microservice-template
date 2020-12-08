@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include <stdio.h>
@@ -8,7 +8,12 @@
 #include <assert.h>
 #include <alpha/alpha-client.h>
 #include <alpha/alpha-resource.h>
-#include "../src/logging.h"
+
+#define FATAL(...) \
+    do { \
+        margo_critical(__VA_ARGS__); \
+        exit(-1); \
+    } while(0)
 
 int main(int argc, char** argv)
 {
@@ -23,7 +28,7 @@ int main(int argc, char** argv)
     uint16_t    provider_id  = atoi(argv[2]);
     const char* id_str       = argv[3];
     if(strlen(id_str) != 36) {
-        LOG_FATAL("id should be 36 character long");
+        FATAL(MARGO_INSTANCE_NULL,"id should be 36 character long");
     }
 
     margo_instance_id mid = margo_init("tcp", MARGO_CLIENT_MODE, 0, 0);
@@ -32,58 +37,58 @@ int main(int argc, char** argv)
     hg_addr_t svr_addr;
     hret = margo_addr_lookup(mid, svr_addr_str, &svr_addr);
     if(hret != HG_SUCCESS) {
-        LOG_FATAL("margo_addr_lookup failed for address %s", svr_addr_str);
+        FATAL(mid,"margo_addr_lookup failed for address %s", svr_addr_str);
     }
 
     alpha_client_t alpha_clt;
     alpha_resource_handle_t alpha_rh;
 
-    LOG_INFO("Creating ALPHA client");
+    margo_info(mid, "Creating ALPHA client");
     ret = alpha_client_init(mid, &alpha_clt);
     if(ret != ALPHA_SUCCESS) {
-        LOG_FATAL("alpha_client_init failed (ret = %d)", ret);
+        FATAL(mid,"alpha_client_init failed (ret = %d)", ret);
     }
 
     alpha_resource_id_t resource_id;
     alpha_resource_id_from_string(id_str, &resource_id);
 
-    LOG_INFO("Creating resource handle for resource %s", id_str);
+    margo_info(mid, "Creating resource handle for resource %s", id_str);
     ret = alpha_resource_handle_create(
             alpha_clt, svr_addr, provider_id,
             resource_id, &alpha_rh);
     if(ret != ALPHA_SUCCESS) {
-        LOG_FATAL("alpha_resource_handle_create failed (ret = %d)", ret);
+        FATAL(mid,"alpha_resource_handle_create failed (ret = %d)", ret);
     }
 
-    LOG_INFO("Saying Hello to server");
+    margo_info(mid, "Saying Hello to server");
     ret = alpha_say_hello(alpha_rh);
     if(ret != ALPHA_SUCCESS) {
-        LOG_FATAL("alpha_say_hello failed (ret = %d)", ret);
+        FATAL(mid,"alpha_say_hello failed (ret = %d)", ret);
     }
 
-    LOG_INFO("Computing sum");
+    margo_info(mid, "Computing sum");
     int32_t result;
     ret = alpha_compute_sum(alpha_rh, 45, 23, &result);
     if(ret != ALPHA_SUCCESS) {
-        LOG_FATAL("alpha_compute_sum failed (ret = %d)", ret);
+        FATAL(mid,"alpha_compute_sum failed (ret = %d)", ret);
     }
-    LOG_INFO("45 + 23 = %d", result);
+    margo_info(mid, "45 + 23 = %d", result);
 
-    LOG_INFO("Releasing resource handle");
+    margo_info(mid, "Releasing resource handle");
     ret = alpha_resource_handle_release(alpha_rh);
     if(ret != ALPHA_SUCCESS) {
-        LOG_FATAL("alpha_resource_handle_release failed (ret = %d)", ret);
+        FATAL(mid,"alpha_resource_handle_release failed (ret = %d)", ret);
     }
 
-    LOG_INFO("Finalizing client");
+    margo_info(mid, "Finalizing client");
     ret = alpha_client_finalize(alpha_clt);
     if(ret != ALPHA_SUCCESS) {
-        LOG_FATAL("alpha_client_finalize failed (ret = %d)", ret);
+        FATAL(mid,"alpha_client_finalize failed (ret = %d)", ret);
     }
 
     hret = margo_addr_free(mid, svr_addr);
     if(hret != HG_SUCCESS) {
-        LOG_FATAL("Could not free address (margo_addr_free returned %d)", hret);
+        FATAL(mid,"Could not free address (margo_addr_free returned %d)", hret);
     }
 
     margo_finalize(mid);
