@@ -4,6 +4,6 @@ spack:
   - pkg-config
   - libuuid
   - mochi-margo
-  - mochi-abt-io
-  - jansson
+  - mochi-abt-io@master
+  - json-c
   concretization: together

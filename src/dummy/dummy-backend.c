@@ -1,57 +1,84 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include <string.h>
-#include <jansson.h>
+#include <json-c/json.h>
 #include "alpha/alpha-backend.h"
 #include "../logging.h"
 #include "dummy-backend.h"
 
 typedef struct dummy_context {
-    json_t* config;
+    struct json_object* config;
     /* ... */
 } dummy_context;
 
 static alpha_return_t dummy_create_resource(
         alpha_provider_t provider,
-        const char* config,
+        const char* config_str,
         void** context)
 {
     (void)provider;
+    struct json_object* config = NULL;
 
-    json_t *root;
-    json_error_t error;
-    root = json_loads(config, 0, &error);
-    if(!root) {
-        LOG_ERROR("JSON configuration error on line %d: %s", error.line, error.text);
-        return ALPHA_ERR_INVALID_CONFIG;
+    // read JSON config from provided string argument
+    if (config_str) {
+        struct json_tokener*    tokener = json_tokener_new();
+        enum json_tokener_error jerr;
+        config = json_tokener_parse_ex(
+                tokener, config_str,
+                strlen(config_str));
+        if (!config) {
+            jerr = json_tokener_get_error(tokener);
+            LOG_ERROR(0, "JSON parse error: %s",
+                      json_tokener_error_desc(jerr));
+            json_tokener_free(tokener);
+            return ALPHA_ERR_INVALID_CONFIG;
+        }
+        json_tokener_free(tokener);
+    } else {
+        // create default JSON config
+        config = json_object_new_object();
     }
 
     dummy_context* ctx = (dummy_context*)calloc(1, sizeof(*ctx));
-    ctx->config = root;
+    ctx->config = config;
     *context = (void*)ctx;
     return ALPHA_SUCCESS;
 }
 
 static alpha_return_t dummy_open_resource(
         alpha_provider_t provider,
-        const char* config,
+        const char* config_str,
         void** context)
 {
     (void)provider;
 
-    json_t *root;
-    json_error_t error;
-    root = json_loads(config, 0, &error);
-    if(!root) {
-        LOG_ERROR("JSON configuration error on line %d: %s", error.line, error.text);
-        return ALPHA_ERR_INVALID_CONFIG;
+    struct json_object* config = NULL;
+
+    // read JSON config from provided string argument
+    if (config_str) {
+        struct json_tokener*    tokener = json_tokener_new();
+        enum json_tokener_error jerr;
+        config = json_tokener_parse_ex(
+                tokener, config_str,
+                strlen(config_str));
+        if (!config) {
+            jerr = json_tokener_get_error(tokener);
+            LOG_ERROR(0, "JSON parse error: %s",
+                      json_tokener_error_desc(jerr));
+            json_tokener_free(tokener);
+            return ALPHA_ERR_INVALID_CONFIG;
+        }
+        json_tokener_free(tokener);
+    } else {
+        // create default JSON config
+        config = json_object_new_object();
     }
 
     dummy_context* ctx = (dummy_context*)calloc(1, sizeof(*ctx));
-    ctx->config = root;
+    ctx->config = config;
     *context = (void*)ctx;
     return ALPHA_SUCCESS;
 }
@@ -59,7 +86,7 @@ static alpha_return_t dummy_open_resource(
 static alpha_return_t dummy_close_resource(void* ctx)
 {
     dummy_context* context = (dummy_context*)ctx;
-    json_decref(context->config);
+    json_object_put(context->config);
     free(context);
     return ALPHA_SUCCESS;
 }
@@ -67,7 +94,7 @@ static alpha_return_t dummy_close_resource(void* ctx)
 static alpha_return_t dummy_destroy_resource(void* ctx)
 {
     dummy_context* context = (dummy_context*)ctx;
-    json_decref(context->config);
+    json_object_put(context->config);
     free(context);
     return ALPHA_SUCCESS;
 }
