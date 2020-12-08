@@ -100,7 +100,7 @@ The _include_ directory of this template project provides public header files.
 The implementation of all these functions is located in the _src_ directory.
 The source also includes functionalities such as a small header-based logging library.
 The _src/dummy_ directory provides a default implementation of a backend. This
-backend also exemplifies the use of the [jansson](https://digip.org/jansson/) library
+backend also exemplifies the use of the [json-c](https://github.com/json-c/json-c) library
 for JSON-based resource configuration. We recommend that you implement a dummy backend for your
 service, as a way of testing application logic and RPCs without the burden of complex
 external dependencies. For instance, a dummy backend may be a backend that simply
@@ -122,7 +122,7 @@ install its dependencies. You may add additional dependencies into this file as
 your microservice gets more complex.
 
 As you modify this project to implement your own microservice, feel free to remove
-any dependencies you don't like (such as jansson or µnit) and adapt it to your needs!
+any dependencies you don't like (such as json-c or µnit) and adapt it to your needs!
 
 
 Setting up your project
