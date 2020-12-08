@@ -67,11 +67,11 @@ static void alpha_sum_ult(hg_handle_t h);
 int alpha_provider_register(
         margo_instance_id mid,
         uint16_t provider_id,
-        const char* token,
-        ABT_pool pool,
-        abt_io_instance_id abtio,
+        const struct alpha_provider_args* args,
         alpha_provider_t* provider)
 {
+    struct alpha_provider_args a = ALPHA_PROVIDER_ARGS_INIT;
+    if(args) a = *args;
     alpha_provider_t p;
     hg_id_t id;
     hg_bool_t flag;
@@ -98,38 +98,38 @@ int alpha_provider_register(
 
     p->mid = mid;
     p->provider_id = provider_id;
-    p->pool = pool;
-    p->abtio = abtio;
-    p->token = (token && strlen(token)) ? strdup(token) : NULL;
+    p->pool = a.pool;
+    p->abtio = a.abtio;
+    p->token = (a.token && strlen(a.token)) ? strdup(a.token) : NULL;
 
     /* Admin RPCs */
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_create_resource",
             create_resource_in_t, create_resource_out_t,
-            alpha_create_resource_ult, provider_id, pool);
+            alpha_create_resource_ult, provider_id, p->pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->create_resource_id = id;
 
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_open_resource",
             open_resource_in_t, open_resource_out_t,
-            alpha_open_resource_ult, provider_id, pool);
+            alpha_open_resource_ult, provider_id, p->pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->open_resource_id = id;
 
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_close_resource",
             close_resource_in_t, close_resource_out_t,
-            alpha_close_resource_ult, provider_id, pool);
+            alpha_close_resource_ult, provider_id, p->pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->close_resource_id = id;
 
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_destroy_resource",
             destroy_resource_in_t, destroy_resource_out_t,
-            alpha_destroy_resource_ult, provider_id, pool);
+            alpha_destroy_resource_ult, provider_id, p->pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->destroy_resource_id = id;
 
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_list_resources",
             list_resources_in_t, list_resources_out_t,
-            alpha_list_resources_ult, provider_id, pool);
+            alpha_list_resources_ult, provider_id, p->pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->list_resources_id = id;
 
@@ -137,14 +137,14 @@ int alpha_provider_register(
 
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_hello",
             hello_in_t, void,
-            alpha_hello_ult, provider_id, pool);
+            alpha_hello_ult, provider_id, p->pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->hello_id = id;
     margo_registered_disable_response(mid, id, HG_TRUE);
 
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_sum",
             sum_in_t, sum_out_t,
-            alpha_sum_ult, provider_id, pool);
+            alpha_sum_ult, provider_id, p->pool);
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;
 

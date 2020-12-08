@@ -95,7 +95,10 @@ The _include_ directory of this template project provides public header files.
   one would need to implement in order to provide a new backend for
   your microservice;
 * _alpha/alpha-admin.h_ contains the functions to create and destroy
-  an admin object, as well as admin functions to interact with a provider.
+  an admin object, as well as admin functions to interact with a provider;
+* _alpha/alpha-provider-handle.h_ contains the definition of a provider handle.
+  This type of construct is often used in Mochi services to encapsulate
+  an address and a provider id.
 
 The implementation of all these functions is located in the _src_ directory.
 The source also includes functionalities such as a small header-based logging library.

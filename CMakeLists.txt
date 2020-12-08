@@ -9,10 +9,7 @@ add_definitions (-g -Wextra -Wall -Wpedantic)
 option (ENABLE_TESTS    "Build tests" OFF)
 option (ENABLE_EXAMPLES "Build examples" OFF)
 
-option (ENABLE_LOG_DEBUG "Enable logging debug messages" OFF)
-option (ENABLE_LOG_INFO  "Enable logging info messages" ON)
-option (ENABLE_LOG_ERROR "Enable logging error messages" ON)
-option (ENABLE_LOG_COLORS "Enable colors when logging" OFF)
+option (ENABLE_BEDROCK  "Build bedrock module" OFF)
 
 # add our cmake module directory to the path
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
@@ -30,9 +27,13 @@ if (NOT CMAKE_BUILD_TYPE)
                   "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
 endif ()
 set (CMAKE_PREFIX_PATH "" CACHE STRING "External dependencies path")
-set (BUILD_SHARED_LIBS "OFF" CACHE BOOL "Build a shared library")
+set (BUILD_SHARED_LIBS "ON" CACHE BOOL "Build a shared library")
 
 find_package (PkgConfig REQUIRED)
+
+if (${ENABLE_BEDROCK})
+    find_package(bedrock REQUIRED)
+endif ()
 
 # search for margo
 pkg_check_modules (MARGO REQUIRED IMPORTED_TARGET margo)

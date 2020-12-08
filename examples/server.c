@@ -23,10 +23,9 @@ int main(int argc, char** argv)
     margo_addr_free(mid,my_address);
     margo_info(mid, "Server running at address %s, with provider id 42", addr_str);
 
-    alpha_provider_register(mid, 42, NULL,
-            ALPHA_ABT_POOL_DEFAULT,
-            ABT_IO_INSTANCE_NULL,
-            ALPHA_PROVIDER_IGNORE);
+    struct alpha_provider_args args = ALPHA_PROVIDER_ARGS_INIT;
+
+    alpha_provider_register(mid, 42, &args, ALPHA_PROVIDER_IGNORE);
 
     margo_wait_for_finalize(mid);
 

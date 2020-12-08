@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #ifndef __ALPHA_SERVER_H
@@ -20,6 +20,21 @@ typedef struct alpha_provider* alpha_provider_t;
 #define ALPHA_PROVIDER_NULL ((alpha_provider_t)NULL)
 #define ALPHA_PROVIDER_IGNORE ((alpha_provider_t*)NULL)
 
+struct alpha_provider_args {
+    const char*        token;  // Security token
+    const char*        config; // JSON configuration
+    ABT_pool           pool;   // Pool used to run RPCs
+    abt_io_instance_id abtio;  // ABT-IO instance
+    // ...
+};
+
+#define ALPHA_PROVIDER_ARGS_INIT { \
+    .token = NULL, \
+    .config = NULL, \
+    .pool = ABT_POOL_NULL, \
+    .abtio = ABT_IO_INSTANCE_NULL \
+}
+
 /**
  * @brief Creates a new ALPHA provider. If ALPHA_PROVIDER_IGNORE
  * is passed as last argument, the provider will be automatically
@@ -27,8 +42,7 @@ typedef struct alpha_provider* alpha_provider_t;
  *
  * @param[in] mid Margo instance
  * @param[in] provider_id provider id
- * @param[in] pool Argobots pool
- * @param[in] abtio ABT-IO instance
+ * @param[in] args argument structure
  * @param[out] provider provider
  *
  * @return ALPHA_SUCCESS or error code defined in alpha-common.h
@@ -36,9 +50,7 @@ typedef struct alpha_provider* alpha_provider_t;
 int alpha_provider_register(
         margo_instance_id mid,
         uint16_t provider_id,
-        const char* token,
-        ABT_pool pool,
-        abt_io_instance_id abtio,
+        const struct alpha_provider_args* args,
         alpha_provider_t* provider);
 
 /**

@@ -33,10 +33,10 @@ static void* test_context_setup(const MunitParameter params[], void* user_data)
     hg_return_t hret = margo_addr_self(mid, &addr);
     munit_assert_int(hret, ==, HG_SUCCESS);
     // register alpha provider
+    struct alpha_provider_args args = ALPHA_PROVIDER_ARGS_INIT;
+    args.token = valid_token;
     alpha_return_t ret = alpha_provider_register(
-            mid, provider_id, valid_token,
-            ALPHA_ABT_POOL_DEFAULT,
-            ABT_IO_INSTANCE_NULL,
+            mid, provider_id, &args,
             ALPHA_PROVIDER_IGNORE);
     munit_assert_int(ret, ==, ALPHA_SUCCESS);
     // create test context

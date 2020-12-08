@@ -6,4 +6,5 @@ spack:
   - mochi-margo
   - mochi-abt-io@master
   - json-c
+  - mochi-bedrock
   concretization: together
