@@ -127,11 +127,6 @@ static MunitResult test_invalid(const MunitParameter params[], void* data)
     ret = alpha_admin_init(context->mid, &admin);
     munit_assert_int(ret, ==, ALPHA_SUCCESS);
 
-    // test that calling the wrong address leads to an error
-    ret = alpha_create_resource(admin, HG_ADDR_NULL,
-            provider_id, valid_token, "dummy", backend_config, &id);
-    munit_assert_int(ret, ==, ALPHA_ERR_FROM_MERCURY);
-
     // test that calling the wrong provider id leads to an error
     ret = alpha_create_resource(admin, context->addr,
             provider_id + 1, valid_token, "dummy", backend_config, &id);
