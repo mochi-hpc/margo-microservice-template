@@ -177,8 +177,9 @@ static void alpha_finalize_provider(void* p)
     remove_all_resources(provider);
     free(provider->backend_types);
     free(provider->token);
+    margo_instance_id mid = provider->mid;
     free(provider);
-    margo_info(provider->mid, "ALPHA provider successfuly finalized");
+    margo_info(mid, "ALPHA provider successfuly finalized");
 }
 
 int alpha_provider_destroy(
