@@ -164,29 +164,30 @@ alpha_return_t alpha_close_resource(
     hg_handle_t h;
     close_resource_in_t  in;
     close_resource_out_t out;
-    hg_return_t ret;
+    hg_return_t hret;
+    int ret;
 
     memcpy(&in.id, &id, sizeof(id));
     in.token  = (char*)token;
 
-    ret = margo_create(admin->mid, address, admin->close_resource_id, &h);
-    if(ret != HG_SUCCESS)
+    hret = margo_create(admin->mid, address, admin->close_resource_id, &h);
+    if(hret != HG_SUCCESS)
         return ALPHA_ERR_FROM_MERCURY;
 
-    ret = margo_provider_forward(provider_id, h, &in);
-    if(ret != HG_SUCCESS) {
+    hret = margo_provider_forward(provider_id, h, &in);
+    if(hret != HG_SUCCESS) {
         margo_destroy(h);
         return ALPHA_ERR_FROM_MERCURY;
     }
 
-    ret = margo_get_output(h, &out);
-    if(ret != HG_SUCCESS) {
+    hret = margo_get_output(h, &out);
+    if(hret != HG_SUCCESS) {
         margo_destroy(h);
         return ALPHA_ERR_FROM_MERCURY;
     }
 
     ret = out.ret;
-    
+
     margo_free_output(h, &out);
     margo_destroy(h);
     return ret;
@@ -202,29 +203,30 @@ alpha_return_t alpha_destroy_resource(
     hg_handle_t h;
     destroy_resource_in_t  in;
     destroy_resource_out_t out;
-    hg_return_t ret;
+    hg_return_t hret;
+    int ret;
 
     memcpy(&in.id, &id, sizeof(id));
     in.token  = (char*)token;
 
-    ret = margo_create(admin->mid, address, admin->destroy_resource_id, &h);
-    if(ret != HG_SUCCESS)
+    hret = margo_create(admin->mid, address, admin->destroy_resource_id, &h);
+    if(hret != HG_SUCCESS)
         return ALPHA_ERR_FROM_MERCURY;
 
-    ret = margo_provider_forward(provider_id, h, &in);
-    if(ret != HG_SUCCESS) {
+    hret = margo_provider_forward(provider_id, h, &in);
+    if(hret != HG_SUCCESS) {
         margo_destroy(h);
         return ALPHA_ERR_FROM_MERCURY;
     }
 
-    ret = margo_get_output(h, &out);
-    if(ret != HG_SUCCESS) {
+    hret = margo_get_output(h, &out);
+    if(hret != HG_SUCCESS) {
         margo_destroy(h);
         return ALPHA_ERR_FROM_MERCURY;
     }
 
     ret = out.ret;
-    
+
     margo_free_output(h, &out);
     margo_destroy(h);
     return ret;

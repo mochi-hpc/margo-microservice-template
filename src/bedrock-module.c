@@ -43,9 +43,10 @@ static char* alpha_get_provider_config(
 }
 
 static int alpha_init_client(
-        margo_instance_id mid,
+        bedrock_args_t args,
         bedrock_module_client_t* client)
 {
+    margo_instance_id mid = bedrock_args_get_margo_instance(args);
     return alpha_client_init(mid, (alpha_client_t*)client);
 }
 
@@ -53,6 +54,13 @@ static int alpha_finalize_client(
         bedrock_module_client_t client)
 {
     return alpha_client_finalize((alpha_client_t)client);
+}
+
+static char* alpha_get_client_config(
+        bedrock_module_client_t client) {
+    (void)client;
+    // TODO
+    return strdup("{}");
 }
 
 static int alpha_create_provider_handle(
@@ -84,9 +92,11 @@ static struct bedrock_module alpha = {
     .get_provider_config     = alpha_get_provider_config,
     .init_client             = alpha_init_client,
     .finalize_client         = alpha_finalize_client,
+    .get_client_config       = alpha_get_client_config,
     .create_provider_handle  = alpha_create_provider_handle,
     .destroy_provider_handle = alpha_destroy_provider_handle,
-    .dependencies            = NULL
+    .provider_dependencies   = NULL,
+    .client_dependencies     = NULL
 };
 
 BEDROCK_REGISTER_MODULE(alpha, alpha)

@@ -1,7 +1,7 @@
-# (C) 2020 The University of Chicago 
+# (C) 2020 The University of Chicago
 # See COPYRIGHT in top-level directory.
 cmake_minimum_required (VERSION 3.8)
-project (alpha C) # add CXX if needed
+project (alpha C CXX)
 enable_testing ()
 
 add_definitions (-g -Wextra -Wall -Wpedantic)

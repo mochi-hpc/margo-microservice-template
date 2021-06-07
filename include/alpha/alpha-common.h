@@ -6,7 +6,7 @@
 #ifndef __ALPHA_COMMON_H
 #define __ALPHA_COMMON_H
 
-#include <uuid/uuid.h>
+#include <uuid.h>
 #include <stdint.h>
 
 #ifdef __cplusplus

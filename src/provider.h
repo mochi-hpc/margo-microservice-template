@@ -8,7 +8,7 @@
 
 #include <margo.h>
 #include <abt-io.h>
-#include <uuid/uuid.h>
+#include <uuid.h>
 #include "alpha/alpha-backend.h"
 #include "uthash.h"
 
