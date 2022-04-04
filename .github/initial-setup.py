@@ -17,6 +17,7 @@ def replace_in_file(filename, mapping):
     outfile.close()
     shutil.copyfile(filename+'.tmp', filename)
     os.remove(filename+'.tmp')
+    os.system(f'git add {filename}')
 
 def list_files_to_edit(root, extensions,
         exclude_directories=[],
@@ -52,8 +53,9 @@ def rename_files_and_directories(root, extensions,
                 new_name = new_name.replace(k, v)
             if new_name != subdirname:
                 print("==> Renaming "+os.path.join(dirname, subdirname)+" into "+os.path.join(dirname, new_name))
-                shutil.move(os.path.join(dirname, subdirname),
-                            os.path.join(dirname, new_name))
+                os.system(f'git mv {os.path.join(dirname, subdirname)} {os.path.join(dirname, new_name)}')
+                #shutil.move(os.path.join(dirname, subdirname),
+                #            os.path.join(dirname, new_name))
                 dirnames.remove(subdirname)
                 dirnames.append(new_name)
         # rename files
@@ -67,8 +69,9 @@ def rename_files_and_directories(root, extensions,
                         new_name = new_name.replace(k, v)
                     if new_name != filename:
                         print("==> Renaming "+os.path.join(dirname, filename)+" into "+os.path.join(dirname, new_name))
-                        os.rename(os.path.join(dirname, filename),
-                                  os.path.join(dirname, new_name))
+                        os.system(f'git mv {os.path.join(dirname, filename)} {os.path.join(dirname, new_name)}')
+                        #os.rename(os.path.join(dirname, filename),
+                        #          os.path.join(dirname, new_name))
                     break # don't try the next extension for this file
 
 
