@@ -103,3 +103,8 @@ if __name__ == '__main__':
         mapping=mapping,
         exclude_directories=['.git', '.github', 'build', '.spack-env', 'munit'],
         exclude_files=['uthash.h'])
+    os.system('git rm .github/initial-setup.py')
+    os.system('git rm initial-setup.json')
+    os.system('git rm COPYRIGHT')
+    with open('README.md', 'w+') as f:
+        f.write(f'Your project "{service_name}" has been setup!\n Enjoy programming with Mochi!')
