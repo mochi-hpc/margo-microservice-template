@@ -2,6 +2,7 @@ import os
 import shutil
 import re
 import sys
+import json
 
 
 def replace_in_file(filename, mapping):
@@ -72,12 +73,13 @@ def rename_files_and_directories(root, extensions,
 
 
 if __name__ == '__main__':
-    service_name = input('Enter the name of your service: ')
+    with open('initial-setup.json') as f:
+        info = json.loads(f.read())
+    service_name = info['service_name']
     if(not re.match('[a-zA-Z_][a-zA-Z\d_]*', service_name)):
         print("Error: service name must start with a letter and consist of letters, digits, or underscores")
         sys.exit(-1)
-    service_name = service_name.rstrip()
-    resource_name = input('Enter the name of the resources (e.g., database): ')
+    resource_name = info['resource_name']
     if(not re.match('[a-zA-Z_][a-zA-Z\d_]*', resource_name)):
         print("Error: resource name must start with a letter and consist of letters, digits, or underscores")
         sys.exit(-1)
@@ -89,12 +91,12 @@ if __name__ == '__main__':
     }
     files_to_edit = list_files_to_edit('.',
         extensions=['.c', '.h', '.txt', '.in'],
-        exclude_directories=['.git','build', '.spack-env', 'munit'],
+        exclude_directories=['.git', '.github', 'build', '.spack-env', 'munit'],
         exclude_files=['uthash.h'])
     for f in files_to_edit:
         replace_in_file(f, mapping)
     rename_files_and_directories('.',
         extensions=['.c', '.h', '.txt', '.in'],
         mapping=mapping,
-        exclude_directories=['.git','build', '.spack-env', 'munit'],
+        exclude_directories=['.git', '.github', 'build', '.spack-env', 'munit'],
         exclude_files=['uthash.h'])
