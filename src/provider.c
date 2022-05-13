@@ -270,8 +270,8 @@ static void alpha_create_resource_ult(hg_handle_t h)
     margo_debug(provider->mid, "Created resource %s of type \"%s\"", id_str, in.type);
 
 finish:
-    ret = margo_respond(h, &out);
-    ret = margo_free_input(h, &in);
+    hret = margo_respond(h, &out);
+    hret = margo_free_input(h, &in);
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_create_resource_ult)
