@@ -93,16 +93,16 @@ if __name__ == '__main__':
         'RESOURCE' : resource_name.upper()
     }
     files_to_edit = list_files_to_edit('.',
-        extensions=['.c', '.h', '.txt', '.in'],
+        extensions=['.c', '.h', '.txt', '.in', '.json'],
         exclude_directories=['.git', '.github', 'build', '.spack-env', 'munit'],
-        exclude_files=['uthash.h'])
+        exclude_files=['uthash.h', 'initial-setup.json'])
     for f in files_to_edit:
         replace_in_file(f, mapping)
     rename_files_and_directories('.',
-        extensions=['.c', '.h', '.txt', '.in'],
+        extensions=['.c', '.h', '.txt', '.in', '.json'],
         mapping=mapping,
         exclude_directories=['.git', '.github', 'build', '.spack-env', 'munit'],
-        exclude_files=['uthash.h'])
+        exclude_files=['uthash.h', 'initial-setup.json'])
     os.system('git rm .github/initial-setup.py')
     os.system('git rm initial-setup.json')
     os.system('git rm COPYRIGHT')
