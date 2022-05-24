@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 
     margo_info(mid,"Creating resource");
     ret = alpha_create_resource(admin, svr_addr, provider_id, NULL,
-                                "dummy", "This is a config", &id);
+                                "dummy", "{}", &id);
     if(ret != ALPHA_SUCCESS) {
         FATAL(mid,"alpha_create_resource failed (ret = %d)", ret);
     }
