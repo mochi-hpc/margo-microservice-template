@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #ifndef __ALPHA_ADMIN_H
@@ -137,5 +137,9 @@ alpha_return_t alpha_list_resources(
         const char* token,
         alpha_resource_id_t* ids,
         size_t* count);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

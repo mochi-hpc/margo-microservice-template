@@ -32,7 +32,7 @@ set (BUILD_SHARED_LIBS "ON" CACHE BOOL "Build a shared library")
 find_package (PkgConfig REQUIRED)
 
 if (${ENABLE_BEDROCK})
-    find_package(bedrock REQUIRED)
+    find_package (bedrock REQUIRED)
 endif ()
 
 # search for margo
@@ -52,9 +52,20 @@ set (ALPHA_VERSION
      "${ALPHA_VERSION_MAJOR}.${ALPHA_VERSION_MINOR}.${ALPHA_VERSION_PATCH}")
 
 add_subdirectory (src)
-if(${ENABLE_TESTS})
-  add_subdirectory (tests)
-endif(${ENABLE_TESTS})
-if(${ENABLE_EXAMPLES})
-  add_subdirectory (examples)
-endif(${ENABLE_EXAMPLES})
+if (${ENABLE_TESTS})
+    enable_testing ()
+    find_package (Catch2 QUIET)
+    if (NOT Catch2_FOUND)
+        include (FetchContent)
+        FetchContent_Declare (
+            Catch2
+            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+            GIT_TAG        v3.0.1
+        )
+        FetchContent_MakeAvailable (Catch2)
+    endif ()
+    add_subdirectory (tests)
+endif (${ENABLE_TESTS})
+if (${ENABLE_EXAMPLES})
+    add_subdirectory (examples)
+endif (${ENABLE_EXAMPLES})

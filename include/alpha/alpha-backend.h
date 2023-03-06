@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #ifndef __ALPHA_BACKEND_H
@@ -8,6 +8,10 @@
 
 #include <alpha/alpha-server.h>
 #include <alpha/alpha-common.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef alpha_return_t (*alpha_backend_create_fn)(alpha_provider_t, const char*, void**);
 typedef alpha_return_t (*alpha_backend_open_fn)(alpha_provider_t, const char*, void**);
@@ -42,10 +46,14 @@ typedef struct alpha_backend_impl {
  * @param provider provider.
  * @param backend_impl backend implementation.
  *
- * @return ALPHA_SUCCESS or error code defined in alpha-common.h 
+ * @return ALPHA_SUCCESS or error code defined in alpha-common.h
  */
 alpha_return_t alpha_provider_register_backend(
         alpha_provider_t provider,
         alpha_backend_impl* backend_impl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

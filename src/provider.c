@@ -64,7 +64,7 @@ static void alpha_sum_ult(hg_handle_t h);
 
 /* add other RPC declarations here */
 
-int alpha_provider_register(
+alpha_return_t alpha_provider_register(
         margo_instance_id mid,
         uint16_t provider_id,
         const struct alpha_provider_args* args,
@@ -182,7 +182,7 @@ static void alpha_finalize_provider(void* p)
     margo_info(mid, "ALPHA provider successfuly finalized");
 }
 
-int alpha_provider_destroy(
+alpha_return_t alpha_provider_destroy(
         alpha_provider_t provider)
 {
     margo_instance_id mid = provider->mid;
