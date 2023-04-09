@@ -26,9 +26,8 @@ set (alpha-vers "${ALPHA_VERSION_MAJOR}.${ALPHA_VERSION_MINOR}")
 # server library
 add_library (alpha-server ${server-src-files} ${dummy-src-files})
 target_link_libraries (alpha-server
-    PkgConfig::MARGO
-    PkgConfig::UUID
-    PkgConfig::JSONC)
+    PUBLIC PkgConfig::MARGO PkgConfig::UUID
+    PRIVATE coverage_config PkgConfig::JSONC)
 target_include_directories (alpha-server PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-server BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
@@ -40,7 +39,9 @@ set_target_properties (alpha-server
 
 # client library
 add_library (alpha-client ${client-src-files})
-target_link_libraries (alpha-client PkgConfig::MARGO PkgConfig::UUID)
+target_link_libraries (alpha-client
+    PUBLIC PkgConfig::MARGO PkgConfig::UUID
+    PRIVATE coverage_config)
 target_include_directories (alpha-client PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-client BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
@@ -52,7 +53,9 @@ set_target_properties (alpha-client
 
 # admin library
 add_library (alpha-admin ${admin-src-files})
-target_link_libraries (alpha-admin PkgConfig::MARGO PkgConfig::UUID)
+target_link_libraries (alpha-admin
+    PUBLIC PkgConfig::MARGO PkgConfig::UUID
+    PRIVATE coverage_config)
 target_include_directories (alpha-admin PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-admin BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
