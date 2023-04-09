@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #include "types.h"
@@ -34,9 +34,9 @@ alpha_return_t alpha_client_init(margo_instance_id mid, alpha_client_t* client)
 alpha_return_t alpha_client_finalize(alpha_client_t client)
 {
     if(client->num_resource_handles != 0) {
-        fprintf(stderr,  
-                "Warning: %ld resource handles not released when alpha_client_finalize was called\n",
-                client->num_resource_handles);
+        margo_warning(client->mid,
+            "%ld resource handles not released when alpha_client_finalize was called",
+            client->num_resource_handles);
     }
     free(client);
     return ALPHA_SUCCESS;

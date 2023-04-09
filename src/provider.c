@@ -376,7 +376,7 @@ static void alpha_close_resource_ult(hg_handle_t h)
         goto finish;
     }
 
-    /* remove the resource from the provider 
+    /* remove the resource from the provider
      * (its close function will be called) */
     ret = remove_resource(provider, &in.id, 1);
     out.ret = ret;
@@ -431,7 +431,7 @@ static void alpha_destroy_resource_ult(hg_handle_t h)
     /* destroy the resource's context */
     resource->fn->destroy_resource(resource->ctx);
 
-    /* remove the resource from the provider 
+    /* remove the resource from the provider
      * (its close function will NOT be called) */
     out.ret = remove_resource(provider, &in.id, 0);
 
@@ -567,7 +567,7 @@ static void alpha_sum_ult(hg_handle_t h)
         goto finish;
     }
 
-    /* call hello on the resource's context */
+    /* call sum on the resource's context */
     out.result = resource->fn->sum(resource->ctx, in.x, in.y);
     out.ret = ALPHA_SUCCESS;
 
