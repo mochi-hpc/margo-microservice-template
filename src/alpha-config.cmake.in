@@ -13,6 +13,7 @@ check_required_components(alpha)
 include (CMakeFindDependencyMacro)
 find_dependency (PkgConfig)
 pkg_check_modules (margo REQUIRED margo)
+pkg_check_modules (uuid REQUIRED uuid)
 
 # FIXME: Any other dependencies should be added here
 
