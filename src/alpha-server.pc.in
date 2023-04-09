@@ -7,6 +7,6 @@ Name: alpha-server
 Description: <insert description here>
 Version: @ALPHA_VERSION@
 
-Requires: margo abt-io
+Requires: margo
 Libs: -L${libdir} @SERVER_PRIVATE_LIBS@
 Cflags: -I${includedir}

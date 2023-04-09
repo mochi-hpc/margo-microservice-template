@@ -99,7 +99,6 @@ alpha_return_t alpha_provider_register(
     p->mid = mid;
     p->provider_id = provider_id;
     p->pool = a.pool;
-    p->abtio = a.abtio;
     p->token = (a.token && strlen(a.token)) ? strdup(a.token) : NULL;
 
     /* Admin RPCs */

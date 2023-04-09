@@ -7,7 +7,6 @@
 #define __PROVIDER_H
 
 #include <margo.h>
-#include <abt-io.h>
 #include <uuid.h>
 #include "alpha/alpha-backend.h"
 #include "uthash.h"
@@ -24,7 +23,6 @@ typedef struct alpha_provider {
     margo_instance_id  mid;                 // Margo instance
     uint16_t           provider_id;         // Provider id
     ABT_pool           pool;                // Pool on which to post RPC requests
-    abt_io_instance_id abtio;               // ABT-IO instance
     char*              token;               // Security token
     /* Resources and backend types */
     size_t               num_backend_types; // number of backend types

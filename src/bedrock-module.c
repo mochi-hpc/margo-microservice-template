@@ -22,9 +22,6 @@ static int alpha_register_provider(
     alpha_args.config = bedrock_args_get_config(args);
     alpha_args.pool   = bedrock_args_get_pool(args);
 
-    alpha_args.abtio = (abt_io_instance_id)
-        bedrock_args_get_dependency(args, "abt_io", 0);
-
     return alpha_provider_register(mid, provider_id, &alpha_args,
                                    (alpha_provider_t*)provider);
 }

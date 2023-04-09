@@ -27,7 +27,6 @@ set (alpha-vers "${ALPHA_VERSION_MAJOR}.${ALPHA_VERSION_MINOR}")
 add_library (alpha-server ${server-src-files} ${dummy-src-files})
 target_link_libraries (alpha-server
     PkgConfig::MARGO
-    PkgConfig::ABTIO
     PkgConfig::UUID
     PkgConfig::JSONC)
 target_include_directories (alpha-server PUBLIC $<INSTALL_INTERFACE:include>)
@@ -78,15 +77,15 @@ set_target_properties (alpha-bedrock-module
 endif ()
 
 # installation stuff (packaging and install commands)
-write_basic_package_version_file(
+write_basic_package_version_file (
     "alpha-config-version.cmake"
     VERSION ${ALPHA_VERSION}
     COMPATIBILITY AnyNewerVersion)
 
 # generate our config file for find_package()
-set(INCLUDE_INSTALL_DIR include/)
-set(LIB_INSTALL_DIR lib/)
-configure_package_config_file(alpha-config.cmake.in
+set (INCLUDE_INSTALL_DIR include/)
+set (LIB_INSTALL_DIR lib/)
+configure_package_config_file (alpha-config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/alpha-config.cmake
   INSTALL_DESTINATION ${LIB_INSTALL_DIR}/alpha/cmake
   PATH_VARS INCLUDE_INSTALL_DIR)

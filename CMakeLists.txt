@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 3.8)
 project (alpha C CXX)
 enable_testing ()
 
-add_definitions (-g -Wextra -Wall -Wpedantic)
+add_definitions (-Wextra -Wall -Wpedantic)
 
 option (ENABLE_TESTS    "Build tests" OFF)
 option (ENABLE_EXAMPLES "Build examples" OFF)
@@ -39,8 +39,6 @@ endif ()
 pkg_check_modules (MARGO REQUIRED IMPORTED_TARGET margo)
 # search for uuid
 pkg_check_modules (UUID REQUIRED IMPORTED_TARGET uuid)
-# comment if you don't need abt-io
-pkg_check_modules (ABTIO REQUIRED IMPORTED_TARGET abt-io)
 # search for json-c
 pkg_check_modules (JSONC REQUIRED IMPORTED_TARGET json-c)
 
