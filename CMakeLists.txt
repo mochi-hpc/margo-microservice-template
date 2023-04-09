@@ -51,11 +51,11 @@ if (${ENABLE_BEDROCK})
 endif ()
 
 # search for margo
-pkg_check_modules (MARGO REQUIRED IMPORTED_TARGET margo)
+pkg_check_modules (margo REQUIRED IMPORTED_TARGET margo)
 # search for uuid
-pkg_check_modules (UUID REQUIRED IMPORTED_TARGET uuid)
+pkg_check_modules (uuid REQUIRED IMPORTED_TARGET uuid)
 # search for json-c
-pkg_check_modules (JSONC REQUIRED IMPORTED_TARGET json-c)
+pkg_check_modules (json-c REQUIRED IMPORTED_TARGET json-c)
 
 # library version set here (e.g. for shared libs).
 set (ALPHA_VERSION_MAJOR 0)
