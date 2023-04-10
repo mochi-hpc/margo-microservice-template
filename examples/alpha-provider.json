@@ -1,19 +1,12 @@
 {
-	"ssg": [
-		{
-			"name":"alpha_group",
-			"bootstrap":"init",
-			"group_file":"alpha.ssg"
-		}
-	],
-	"libraries":{
-		"alpha": "libalpha-bedrock-module.so"
-	},
-	"providers":[
-		{
-			"name": "Alpha",
-			"type": "alpha",
-			"provider_id": 42
-		}
-	]
+    "libraries":{
+        "alpha": "src/libalpha-bedrock-module.so"
+    },
+    "providers":[
+        {
+            "name": "my_alpha_provider",
+            "type": "alpha",
+            "provider_id": 42
+        }
+    ]
 }

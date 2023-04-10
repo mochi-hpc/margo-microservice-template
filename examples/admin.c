@@ -33,6 +33,8 @@ int main(int argc, char** argv)
     margo_instance_id mid = margo_init("tcp", MARGO_CLIENT_MODE, 0, 0);
     assert(mid);
 
+    margo_set_log_level(mid, MARGO_LOG_INFO);
+
     hret = margo_addr_lookup(mid, svr_addr_str, &svr_addr);
     if(hret != HG_SUCCESS) {
         FATAL(mid,"margo_addr_lookup failed (ret = %d)", hret);
