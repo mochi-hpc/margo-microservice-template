@@ -59,9 +59,6 @@ alpha_return_t alpha_resource_handle_release(alpha_resource_handle_t handle);
  * @brief Makes the target ALPHA resource print Hello World.
  *
  * @param[in] handle resource handle.
- * @param[in] x first number.
- * @param[in] y second number.
- * @param[out] result resulting value.
  *
  * @return ALPHA_SUCCESS or error code defined in alpha-common.h
  */
