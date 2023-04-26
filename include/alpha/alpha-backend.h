@@ -17,6 +17,7 @@ typedef alpha_return_t (*alpha_backend_create_fn)(alpha_provider_t, const char*,
 typedef alpha_return_t (*alpha_backend_open_fn)(alpha_provider_t, const char*, void**);
 typedef alpha_return_t (*alpha_backend_close_fn)(void*);
 typedef alpha_return_t (*alpha_backend_destroy_fn)(void*);
+typedef char* (*alpha_backend_get_config_fn)(void*);
 
 /**
  * @brief Implementation of an ALPHA backend.
@@ -25,10 +26,11 @@ typedef struct alpha_backend_impl {
     // backend name
     const char* name;
     // backend management functions
-    alpha_backend_create_fn   create_resource;
-    alpha_backend_open_fn     open_resource;
-    alpha_backend_close_fn    close_resource;
-    alpha_backend_destroy_fn  destroy_resource;
+    alpha_backend_create_fn     create_resource;
+    alpha_backend_open_fn       open_resource;
+    alpha_backend_close_fn      close_resource;
+    alpha_backend_destroy_fn    destroy_resource;
+    alpha_backend_get_config_fn get_config;
     // RPC functions
     void (*hello)(void*);
     int32_t (*sum)(void*, int32_t, int32_t);

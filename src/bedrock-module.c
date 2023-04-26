@@ -35,8 +35,7 @@ static int alpha_deregister_provider(
 static char* alpha_get_provider_config(
         bedrock_module_provider_t provider) {
     (void)provider;
-    // TODO
-    return strdup("{}");
+    return alpha_provider_get_config(provider);
 }
 
 static int alpha_init_client(

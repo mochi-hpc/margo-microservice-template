@@ -266,6 +266,31 @@ alpha_return_t alpha_provider_destroy(
     return ALPHA_SUCCESS;
 }
 
+char* alpha_provider_get_config(alpha_provider_t provider)
+{
+    if (!provider) return NULL;
+    struct json_object* config = json_object_new_object();
+    struct json_object* resources_array = json_object_new_array_ext(provider->num_resources);
+    json_object_object_add(config, "resources", resources_array);
+
+    for(size_t i = 0; i < provider->num_resources; ++i) {
+        struct alpha_resource* resource = &provider->resources[i];
+        char id_str[37];
+        alpha_resource_id_to_string(resource->id, id_str);
+        char* resource_config_str = (resource->fn->get_config)(resource->ctx);
+        struct json_object* resource_config = json_object_new_object();
+        json_object_object_add(resource_config, "__id__", json_object_new_string(id_str));
+        json_object_object_add(resource_config, "type", json_object_new_string(resource->fn->name));
+        json_object_object_add(resource_config, "config", json_tokener_parse(resource_config_str));
+        json_object_array_add(resources_array, resource_config);
+        free(resource_config_str);
+    }
+
+    char* result = strdup(json_object_to_json_string(config));
+    json_object_put(config);
+    return result;
+}
+
 alpha_return_t alpha_provider_register_backend(
         alpha_provider_t provider,
         alpha_backend_impl* backend_impl)

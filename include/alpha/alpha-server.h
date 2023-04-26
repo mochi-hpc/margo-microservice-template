@@ -60,6 +60,18 @@ alpha_return_t alpha_provider_register(
 alpha_return_t alpha_provider_destroy(
         alpha_provider_t provider);
 
+/**
+ * @brief Returns a JSON-formatted configuration of the provider.
+ *
+ * The caller is responsible for freeing the returned pointer.
+ *
+ * @param provider Alpha provider
+ *
+ * @return a heap-allocated JSON string or NULL in case of an error.
+ */
+char* alpha_provider_get_config(
+        alpha_provider_t provider);
+
 #ifdef __cplusplus
 }
 #endif

@@ -99,6 +99,12 @@ static alpha_return_t dummy_destroy_resource(void* ctx)
     return ALPHA_SUCCESS;
 }
 
+static char* dummy_get_config(void* ctx)
+{
+    (void)ctx;
+    return strdup("{}");
+}
+
 static void dummy_say_hello(void* ctx)
 {
     dummy_context* context = (dummy_context*)ctx;
@@ -119,6 +125,7 @@ static alpha_backend_impl dummy_backend = {
     .open_resource    = dummy_open_resource,
     .close_resource   = dummy_close_resource,
     .destroy_resource = dummy_destroy_resource,
+    .get_config       = dummy_get_config,
 
     .hello            = dummy_say_hello,
     .sum              = dummy_compute_sum
