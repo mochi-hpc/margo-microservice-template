@@ -8,6 +8,7 @@
 
 #include <margo.h>
 #include <uuid.h>
+#include <json-c/json.h>
 #include "alpha/alpha-backend.h"
 #include "uthash.h"
 
@@ -20,10 +21,10 @@ typedef struct alpha_resource {
 
 typedef struct alpha_provider {
     /* Margo/Argobots/Mercury environment */
-    margo_instance_id  mid;                 // Margo instance
-    uint16_t           provider_id;         // Provider id
-    ABT_pool           pool;                // Pool on which to post RPC requests
-    char*              token;               // Security token
+    margo_instance_id   mid;                 // Margo instance
+    uint16_t            provider_id;         // Provider id
+    ABT_pool            pool;                // Pool on which to post RPC requests
+    char*               token;               // Security token
     /* Resources and backend types */
     size_t               num_backend_types; // number of backend types
     alpha_backend_impl** backend_types;     // array of pointers to backend types

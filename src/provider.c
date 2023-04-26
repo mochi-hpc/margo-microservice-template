@@ -90,9 +90,36 @@ alpha_return_t alpha_provider_register(
         return ALPHA_ERR_INVALID_PROVIDER;
     }
 
+    // parse json configuration
+    struct json_object* config = NULL;
+    if (a.config) {
+        struct json_tokener*    tokener = json_tokener_new();
+        enum json_tokener_error jerr;
+        config = json_tokener_parse_ex(
+                tokener, a.config,
+                strlen(a.config));
+        if (!config) {
+            jerr = json_tokener_get_error(tokener);
+            margo_error(mid, "JSON parse error: %s",
+                    json_tokener_error_desc(jerr));
+            json_tokener_free(tokener);
+            return ALPHA_ERR_INVALID_CONFIG;
+        }
+        json_tokener_free(tokener);
+        if (!(json_object_is_type(config, json_type_object))) {
+            margo_error(mid, "JSON configuration should be an object");
+            json_object_put(config);
+            return ALPHA_ERR_INVALID_CONFIG;
+        }
+    } else {
+        // create default JSON config
+        config = json_object_new_object();
+    }
+
     p = (alpha_provider_t)calloc(1, sizeof(*p));
     if(p == NULL) {
         margo_error(mid, "Could not allocate memory for provider");
+        json_object_put(config);
         return ALPHA_ERR_ALLOCATION;
     }
 
@@ -153,10 +180,55 @@ alpha_return_t alpha_provider_register(
     /* add backends available at compiler time (e.g. default/dummy backends) */
     alpha_provider_register_dummy_backend(p); // function from "dummy/dummy-backend.h"
 
+    /* read the configuration to add defined resources */
+    struct json_object* resources_array = json_object_object_get(config, "resources");
+    if (resources_array && json_object_is_type(resources_array, json_type_array)) {
+        for (size_t i = 0; i < json_object_array_length(resources_array); ++i) {
+            struct json_object* resource
+                = json_object_array_get_idx(resources_array, i);
+            if(!json_object_is_type(resource, json_type_object))
+                continue;
+            struct json_object* resource_type   = json_object_object_get(resource, "type");
+            if(!json_object_is_type(resource_type, json_type_string)) {
+                margo_error(mid, "\"type\" field in resource configuration should be a string");
+                continue;
+            }
+            const char* type = json_object_get_string(resource_type);
+            struct json_object* resource_config = json_object_object_get(resource, "config");
+            alpha_backend_impl* backend         = find_backend_impl(p, type);
+            if(!backend) {
+                margo_error(mid, "Could not find backend of type \"%s\"", type);
+                continue;
+            }
+            /* create a uuid for the new resource */
+            alpha_resource_id_t id;
+            uuid_generate(id.uuid);
+            /* create the new resource's context */
+            void* context = NULL;
+            int ret = backend->create_resource(p, json_object_to_json_string(resource_config), &context);
+            if(ret != ALPHA_SUCCESS) {
+                margo_error(mid, "Could not create resource, backend returned %d", ret);
+                continue;
+            }
+
+            /* allocate a resource, set it up, and add it to the provider */
+            alpha_resource* resource_data = (alpha_resource*)calloc(1, sizeof(*resource_data));
+            resource_data->fn  = backend;
+            resource_data->ctx = context;
+            resource_data->id  = id;
+            add_resource(p, resource_data);
+
+            char id_str[37];
+            alpha_resource_id_to_string(id, id_str);
+            margo_debug(mid, "Created resource %s of type \"%s\"", id_str, type);
+        }
+    }
+
     margo_provider_push_finalize_callback(mid, p, &alpha_finalize_provider, p);
 
     if(provider)
         *provider = p;
+    json_object_put(config);
     margo_info(mid, "ALPHA provider registration done");
     return ALPHA_SUCCESS;
 }

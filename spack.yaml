@@ -8,7 +8,7 @@ spack:
   - mochi-bedrock ~abtio ~ssg
   concretizer:
     unify: true
-    reuse: false
+    reuse: true
   modules:
     prefix_inspections:
       lib: [LD_LIBRARY_PATH]
