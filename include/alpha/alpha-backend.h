@@ -13,8 +13,8 @@
 extern "C" {
 #endif
 
-typedef alpha_return_t (*alpha_backend_create_fn)(alpha_provider_t, const char*, void**);
-typedef alpha_return_t (*alpha_backend_open_fn)(alpha_provider_t, const char*, void**);
+typedef alpha_return_t (*alpha_backend_create_fn)(margo_instance_id, alpha_provider_t, const char*, void**);
+typedef alpha_return_t (*alpha_backend_open_fn)(margo_instance_id,alpha_provider_t, const char*, void**);
 typedef alpha_return_t (*alpha_backend_close_fn)(void*);
 typedef alpha_return_t (*alpha_backend_destroy_fn)(void*);
 typedef char* (*alpha_backend_get_config_fn)(void*);

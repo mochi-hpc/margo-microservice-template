@@ -15,6 +15,7 @@ typedef struct dummy_context {
 } dummy_context;
 
 static alpha_return_t dummy_create_resource(
+        margo_instance_id mid,
         alpha_provider_t provider,
         const char* config_str,
         void** context)
@@ -31,7 +32,7 @@ static alpha_return_t dummy_create_resource(
                 strlen(config_str));
         if (!config) {
             jerr = json_tokener_get_error(tokener);
-            margo_error(provider->mid, "JSON parse error: %s",
+            margo_error(mid, "JSON parse error: %s",
                       json_tokener_error_desc(jerr));
             json_tokener_free(tokener);
             return ALPHA_ERR_INVALID_CONFIG;
@@ -49,6 +50,7 @@ static alpha_return_t dummy_create_resource(
 }
 
 static alpha_return_t dummy_open_resource(
+        margo_instance_id mid,
         alpha_provider_t provider,
         const char* config_str,
         void** context)
@@ -66,7 +68,7 @@ static alpha_return_t dummy_open_resource(
                 strlen(config_str));
         if (!config) {
             jerr = json_tokener_get_error(tokener);
-            margo_error(provider->mid, "JSON parse error: %s",
+            margo_error(mid, "JSON parse error: %s",
                       json_tokener_error_desc(jerr));
             json_tokener_free(tokener);
             return ALPHA_ERR_INVALID_CONFIG;

@@ -205,7 +205,7 @@ alpha_return_t alpha_provider_register(
             uuid_generate(id.uuid);
             /* create the new resource's context */
             void* context = NULL;
-            int ret = backend->create_resource(p, json_object_to_json_string(resource_config), &context);
+            int ret = backend->create_resource(mid, p, json_object_to_json_string(resource_config), &context);
             if(ret != ALPHA_SUCCESS) {
                 margo_error(mid, "Could not create resource, backend returned %d", ret);
                 continue;
@@ -343,7 +343,7 @@ static void alpha_create_resource_ult(hg_handle_t h)
 
     /* create the new resource's context */
     void* context = NULL;
-    ret = backend->create_resource(provider, in.config, &context);
+    ret = backend->create_resource(provider->mid, provider, in.config, &context);
     if(ret != ALPHA_SUCCESS) {
         out.ret = ret;
         margo_error(provider->mid, "Could not create resource, backend returned %d", ret);
@@ -415,7 +415,7 @@ static void alpha_open_resource_ult(hg_handle_t h)
 
     /* create the new resource's context */
     void* context = NULL;
-    ret = backend->open_resource(provider, in.config, &context);
+    ret = backend->open_resource(provider->mid, provider, in.config, &context);
     if(ret != ALPHA_SUCCESS) {
         margo_error(mid, "Backend failed to open resource");
         out.ret = ret;
