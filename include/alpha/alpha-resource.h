@@ -56,15 +56,6 @@ alpha_return_t alpha_resource_handle_ref_incr(
 alpha_return_t alpha_resource_handle_release(alpha_resource_handle_t handle);
 
 /**
- * @brief Makes the target ALPHA resource print Hello World.
- *
- * @param[in] handle resource handle.
- *
- * @return ALPHA_SUCCESS or error code defined in alpha-common.h
- */
-alpha_return_t alpha_say_hello(alpha_resource_handle_t handle);
-
-/**
  * @brief Makes the target ALPHA resource compute the sum of the
  * two numbers and return the result.
  *

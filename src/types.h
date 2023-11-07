@@ -1,6 +1,6 @@
 /*
  * (C) 2020 The University of Chicago
- * 
+ *
  * See COPYRIGHT in top-level directory.
  */
 #ifndef _PARAMS_H
@@ -86,9 +86,6 @@ static inline hg_return_t hg_proc_list_resources_out_t(hg_proc_t proc, void *dat
 }
 
 /* Client RPC types */
-
-MERCURY_GEN_PROC(hello_in_t,
-        ((alpha_resource_id_t)(resource_id)))
 
 MERCURY_GEN_PROC(sum_in_t,
         ((alpha_resource_id_t)(resource_id))\

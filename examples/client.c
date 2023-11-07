@@ -63,12 +63,6 @@ int main(int argc, char** argv)
         FATAL(mid,"alpha_resource_handle_create failed (ret = %d)", ret);
     }
 
-    margo_info(mid, "Saying Hello to server");
-    ret = alpha_say_hello(alpha_rh);
-    if(ret != ALPHA_SUCCESS) {
-        FATAL(mid,"alpha_say_hello failed (ret = %d)", ret);
-    }
-
     margo_info(mid, "Computing sum");
     int32_t result;
     ret = alpha_compute_sum(alpha_rh, 45, 23, &result);

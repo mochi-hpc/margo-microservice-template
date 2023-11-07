@@ -20,11 +20,8 @@ alpha_return_t alpha_client_init(margo_instance_id mid, alpha_client_t* client)
 
     if(flag == HG_TRUE) {
         margo_registered_name(mid, "alpha_sum", &c->sum_id, &flag);
-        margo_registered_name(mid, "alpha_hello", &c->hello_id, &flag);
     } else {
         c->sum_id = MARGO_REGISTER(mid, "alpha_sum", sum_in_t, sum_out_t, NULL);
-        c->hello_id = MARGO_REGISTER(mid, "alpha_hello", hello_in_t, void, NULL);
-        margo_registered_disable_response(mid, c->hello_id, HG_TRUE);
     }
 
     *client = c;
@@ -96,28 +93,6 @@ alpha_return_t alpha_resource_handle_release(alpha_resource_handle_t handle)
     return ALPHA_SUCCESS;
 }
 
-alpha_return_t alpha_say_hello(alpha_resource_handle_t handle)
-{
-    hg_handle_t   h;
-    hello_in_t     in;
-    hg_return_t ret;
-
-    memcpy(&in.resource_id, &(handle->resource_id), sizeof(in.resource_id));
-
-    ret = margo_create(handle->client->mid, handle->addr, handle->client->hello_id, &h);
-    if(ret != HG_SUCCESS)
-        return ALPHA_ERR_FROM_MERCURY;
-
-    ret = margo_provider_forward(handle->provider_id, h, &in);
-    if(ret != HG_SUCCESS) {
-        margo_destroy(h);
-        return ALPHA_ERR_FROM_MERCURY;
-    }
-
-    margo_destroy(h);
-    return ALPHA_SUCCESS;
-}
-
 alpha_return_t alpha_compute_sum(
         alpha_resource_handle_t handle,
         int32_t x,
@@ -154,8 +129,9 @@ alpha_return_t alpha_compute_sum(
     if(ret == ALPHA_SUCCESS)
         *result = out.result;
 
-finish:
     margo_free_output(h, &out);
+
+finish:
     margo_destroy(h);
     return ret;
 }

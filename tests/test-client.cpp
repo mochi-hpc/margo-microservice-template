@@ -71,12 +71,6 @@ TEST_CASE("Test client interface", "[client]") {
                     context->addr, provider_id, context->id, &rh);
             REQUIRE(ret == ALPHA_SUCCESS);
 
-            SECTION("Send hello RPC") {
-                // test that we can send a hello RPC to the resource
-                ret = alpha_say_hello(rh);
-                REQUIRE(ret == ALPHA_SUCCESS);
-            }
-
             SECTION("Send sum RPC") {
                 // test that we can send a sum RPC to the resource
                 int32_t result = 0;

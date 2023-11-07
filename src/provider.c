@@ -57,8 +57,6 @@ static DECLARE_MARGO_RPC_HANDLER(alpha_list_resources_ult)
 static void alpha_list_resources_ult(hg_handle_t h);
 
 /* Client RPCs */
-static DECLARE_MARGO_RPC_HANDLER(alpha_hello_ult)
-static void alpha_hello_ult(hg_handle_t h);
 static DECLARE_MARGO_RPC_HANDLER(alpha_sum_ult)
 static void alpha_sum_ult(hg_handle_t h);
 
@@ -161,13 +159,6 @@ alpha_return_t alpha_provider_register(
 
     /* Client RPCs */
 
-    id = MARGO_REGISTER_PROVIDER(mid, "alpha_hello",
-            hello_in_t, void,
-            alpha_hello_ult, provider_id, p->pool);
-    margo_register_data(mid, id, (void*)p, NULL);
-    p->hello_id = id;
-    margo_registered_disable_response(mid, id, HG_TRUE);
-
     id = MARGO_REGISTER_PROVIDER(mid, "alpha_sum",
             sum_in_t, sum_out_t,
             alpha_sum_ult, provider_id, p->pool);
@@ -242,7 +233,6 @@ static void alpha_finalize_provider(void* p)
     margo_deregister(provider->mid, provider->close_resource_id);
     margo_deregister(provider->mid, provider->destroy_resource_id);
     margo_deregister(provider->mid, provider->list_resources_id);
-    margo_deregister(provider->mid, provider->hello_id);
     margo_deregister(provider->mid, provider->sum_id);
     /* deregister other RPC ids ... */
     remove_all_resources(provider);
@@ -598,42 +588,6 @@ finish:
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_list_resources_ult)
-
-static void alpha_hello_ult(hg_handle_t h)
-{
-    hg_return_t hret;
-    hello_in_t in;
-
-    /* find margo instance */
-    margo_instance_id mid = margo_hg_handle_get_instance(h);
-
-    /* find provider */
-    const struct hg_info* info = margo_get_info(h);
-    alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
-
-    /* deserialize the input */
-    hret = margo_get_input(h, &in);
-    if(hret != HG_SUCCESS) {
-        margo_error(mid, "Could not deserialize output (mercury error %d)", hret);
-        goto finish;
-    }
-
-    /* find the resource */
-    alpha_resource* resource = find_resource(provider, &in.resource_id);
-    if(!resource) {
-        margo_error(mid, "Could not find requested resource");
-        goto finish;
-    }
-
-    /* call hello on the resource's context */
-    resource->fn->hello(resource->ctx);
-
-    margo_debug(mid, "Called hello RPC");
-
-finish:
-    margo_destroy(h);
-}
-static DEFINE_MARGO_RPC_HANDLER(alpha_hello_ult)
 
 static void alpha_sum_ult(hg_handle_t h)
 {
