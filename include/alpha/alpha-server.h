@@ -7,6 +7,7 @@
 #define __ALPHA_SERVER_H
 
 #include <alpha/alpha-common.h>
+#include <alpha/alpha-backend.h>
 #include <margo.h>
 
 #ifdef __cplusplus
@@ -20,16 +21,14 @@ typedef struct alpha_provider* alpha_provider_t;
 #define ALPHA_PROVIDER_IGNORE ((alpha_provider_t*)NULL)
 
 struct alpha_provider_args {
-    const char*        token;  // Security token
-    const char*        config; // JSON configuration
-    ABT_pool           pool;   // Pool used to run RPCs
+    ABT_pool            pool;    // Pool used to run RPCs
+    alpha_backend_impl* backend; // Type of backend, will take priority over the "type" field in config
     // ...
 };
 
 #define ALPHA_PROVIDER_ARGS_INIT { \
-    /* .token = */ NULL, \
-    /* .config = */ NULL, \
-    /* .pool = */ ABT_POOL_NULL \
+    /* .pool = */ ABT_POOL_NULL, \
+    /* .backend = */ NULL \
 }
 
 /**
@@ -47,6 +46,7 @@ struct alpha_provider_args {
 alpha_return_t alpha_provider_register(
         margo_instance_id mid,
         uint16_t provider_id,
+        const char* config,
         const struct alpha_provider_args* args,
         alpha_provider_t* provider);
 

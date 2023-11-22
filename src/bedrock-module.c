@@ -6,8 +6,6 @@
 #include <bedrock/module.h>
 #include "alpha/alpha-server.h"
 #include "alpha/alpha-client.h"
-#include "alpha/alpha-admin.h"
-#include "alpha/alpha-provider-handle.h"
 #include "client.h"
 #include <string.h>
 
@@ -19,10 +17,10 @@ static int alpha_register_provider(
     uint16_t provider_id  = bedrock_args_get_provider_id(args);
 
     struct alpha_provider_args alpha_args = { 0 };
-    alpha_args.config = bedrock_args_get_config(args);
+    const char* config = bedrock_args_get_config(args);
     alpha_args.pool   = bedrock_args_get_pool(args);
 
-    return alpha_provider_register(mid, provider_id, &alpha_args,
+    return alpha_provider_register(mid, provider_id, config, &alpha_args,
                                    (alpha_provider_t*)provider);
 }
 
@@ -66,9 +64,8 @@ static int alpha_create_provider_handle(
         bedrock_module_provider_handle_t* ph)
 {
     alpha_client_t c = (alpha_client_t)client;
-    alpha_provider_handle_t tmp = calloc(1, sizeof(*tmp));
-    margo_addr_dup(c->mid, address, &(tmp->addr));
-    tmp->provider_id = provider_id;
+    alpha_resource_handle_t tmp;
+    alpha_resource_handle_create(c, address, provider_id, &tmp);
     *ph = (bedrock_module_provider_handle_t)tmp;
     return BEDROCK_SUCCESS;
 }
@@ -76,9 +73,8 @@ static int alpha_create_provider_handle(
 static int alpha_destroy_provider_handle(
         bedrock_module_provider_handle_t ph)
 {
-    alpha_provider_handle_t tmp = (alpha_provider_handle_t)ph;
-    margo_addr_free(tmp->mid, tmp->addr);
-    free(tmp);
+    alpha_resource_handle_t tmp = (alpha_resource_handle_t)ph;
+    alpha_resource_handle_release(tmp);
     return BEDROCK_SUCCESS;
 }
 

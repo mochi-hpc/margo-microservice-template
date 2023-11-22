@@ -12,8 +12,10 @@ int main(int argc, char** argv)
 {
     (void)argc;
     (void)argv;
-    margo_instance_id mid = margo_init("tcp", MARGO_SERVER_MODE, 0, 0);
+    margo_instance_id mid = margo_init("na+sm", MARGO_SERVER_MODE, 0, 0);
     assert(mid);
+
+    margo_set_log_level(mid, MARGO_LOG_INFO);
 
     hg_addr_t my_address;
     margo_addr_self(mid, &my_address);
@@ -25,7 +27,9 @@ int main(int argc, char** argv)
 
     struct alpha_provider_args args = ALPHA_PROVIDER_ARGS_INIT;
 
-    alpha_provider_register(mid, 42, &args, ALPHA_PROVIDER_IGNORE);
+    const char* config = "{ \"resource\":{ \"type\":\"dummy\", \"config\":{} } }";
+
+    alpha_provider_register(mid, 42, config, &args, ALPHA_PROVIDER_IGNORE);
 
     margo_wait_for_finalize(mid);
 

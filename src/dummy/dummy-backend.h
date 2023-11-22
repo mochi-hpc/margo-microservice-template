@@ -8,6 +8,6 @@
 
 #include "alpha/alpha-server.h"
 
-alpha_return_t alpha_provider_register_dummy_backend(alpha_provider_t provider);
+alpha_return_t alpha_register_dummy_backend(void);
 
 #endif

@@ -6,16 +6,16 @@
 #ifndef __ALPHA_BACKEND_H
 #define __ALPHA_BACKEND_H
 
-#include <alpha/alpha-server.h>
+#include <margo.h>
 #include <alpha/alpha-common.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef struct alpha_provider* alpha_provider_t;
+
 typedef alpha_return_t (*alpha_backend_create_fn)(margo_instance_id, alpha_provider_t, const char*, void**);
-typedef alpha_return_t (*alpha_backend_open_fn)(margo_instance_id,alpha_provider_t, const char*, void**);
-typedef alpha_return_t (*alpha_backend_close_fn)(void*);
 typedef alpha_return_t (*alpha_backend_destroy_fn)(void*);
 typedef char* (*alpha_backend_get_config_fn)(void*);
 
@@ -27,32 +27,28 @@ typedef struct alpha_backend_impl {
     const char* name;
     // backend management functions
     alpha_backend_create_fn     create_resource;
-    alpha_backend_open_fn       open_resource;
-    alpha_backend_close_fn      close_resource;
     alpha_backend_destroy_fn    destroy_resource;
     alpha_backend_get_config_fn get_config;
     // RPC functions
-    void (*hello)(void*);
     int32_t (*sum)(void*, int32_t, int32_t);
     // ... add other functions here
 } alpha_backend_impl;
 
 /**
- * @brief Registers a backend implementation to be used by the
- * specified provider.
+ * @brief Registers a backend implementation.
  *
  * Note: the backend implementation will not be copied; it is
- * therefore important that it stays valid in memory until the
- * provider is destroyed.
+ * therefore important that it stays valid in memory while
+ * in use by any alpha provider.
  *
- * @param provider provider.
+ * Important: up to 64 backend implementations may be registered,
+ * including the ones provided internally.
+ *
  * @param backend_impl backend implementation.
  *
  * @return ALPHA_SUCCESS or error code defined in alpha-common.h
  */
-alpha_return_t alpha_provider_register_backend(
-        alpha_provider_t provider,
-        alpha_backend_impl* backend_impl);
+alpha_return_t alpha_register_backend(alpha_backend_impl* backend_impl);
 
 #ifdef __cplusplus
 }

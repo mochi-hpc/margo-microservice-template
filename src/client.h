@@ -21,7 +21,6 @@ typedef struct alpha_resource_handle {
     hg_addr_t           addr;
     uint16_t            provider_id;
     uint64_t            refcount;
-    alpha_resource_id_t resource_id;
 } alpha_resource_handle;
 
 #endif

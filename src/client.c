@@ -43,7 +43,6 @@ alpha_return_t alpha_resource_handle_create(
         alpha_client_t client,
         hg_addr_t addr,
         uint16_t provider_id,
-        alpha_resource_id_t resource_id,
         alpha_resource_handle_t* handle)
 {
     if(client == ALPHA_CLIENT_NULL)
@@ -62,7 +61,6 @@ alpha_return_t alpha_resource_handle_create(
 
     rh->client      = client;
     rh->provider_id = provider_id;
-    rh->resource_id = resource_id;
     rh->refcount    = 1;
 
     client->num_resource_handles += 1;
@@ -105,7 +103,6 @@ alpha_return_t alpha_compute_sum(
     hg_return_t hret;
     alpha_return_t ret;
 
-    memcpy(&in.resource_id, &(handle->resource_id), sizeof(in.resource_id));
     in.x = x;
     in.y = y;
 

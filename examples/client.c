@@ -18,8 +18,8 @@
 
 int main(int argc, char** argv)
 {
-    if(argc != 4) {
-        fprintf(stderr,"Usage: %s <server address> <provider id> <resource id>\n", argv[0]);
+    if(argc != 3) {
+        fprintf(stderr,"Usage: %s <server address> <provider id>\n", argv[0]);
         exit(-1);
     }
 
@@ -27,12 +27,8 @@ int main(int argc, char** argv)
     hg_return_t hret;
     const char* svr_addr_str = argv[1];
     uint16_t    provider_id  = atoi(argv[2]);
-    const char* id_str       = argv[3];
-    if(strlen(id_str) != 36) {
-        FATAL(MARGO_INSTANCE_NULL,"id should be 36 character long");
-    }
 
-    margo_instance_id mid = margo_init("tcp", MARGO_CLIENT_MODE, 0, 0);
+    margo_instance_id mid = margo_init("na+sm", MARGO_CLIENT_MODE, 0, 0);
     assert(mid);
 
     margo_set_log_level(mid, MARGO_LOG_INFO);
@@ -52,13 +48,8 @@ int main(int argc, char** argv)
         FATAL(mid,"alpha_client_init failed (ret = %d)", ret);
     }
 
-    alpha_resource_id_t resource_id;
-    alpha_resource_id_from_string(id_str, &resource_id);
-
-    margo_info(mid, "Creating resource handle for resource %s", id_str);
-    ret = alpha_resource_handle_create(
-            alpha_clt, svr_addr, provider_id,
-            resource_id, &alpha_rh);
+    margo_info(mid, "Creating resource handle for provider id %d", (int)provider_id);
+    ret = alpha_resource_handle_create(alpha_clt, svr_addr, provider_id, &alpha_rh);
     if(ret != ALPHA_SUCCESS) {
         FATAL(mid,"alpha_resource_handle_create failed (ret = %d)", ret);
     }

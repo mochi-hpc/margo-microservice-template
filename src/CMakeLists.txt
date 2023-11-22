@@ -5,9 +5,6 @@ set (server-src-files
 set (client-src-files
      client.c)
 
-set (admin-src-files
-     admin.c)
-
 set (dummy-src-files
      dummy/dummy-backend.c)
 
@@ -25,8 +22,9 @@ set (alpha-vers "${ALPHA_VERSION_MAJOR}.${ALPHA_VERSION_MINOR}")
 
 # server library
 add_library (alpha-server ${server-src-files} ${dummy-src-files})
+add_library (alpha::server ALIAS alpha-server)
 target_link_libraries (alpha-server
-    PUBLIC PkgConfig::margo PkgConfig::uuid
+    PUBLIC PkgConfig::margo
     PRIVATE coverage_config PkgConfig::json-c)
 target_include_directories (alpha-server PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-server BEFORE PUBLIC
@@ -39,8 +37,9 @@ set_target_properties (alpha-server
 
 # client library
 add_library (alpha-client ${client-src-files})
+add_library (alpha::client ALIAS alpha-client)
 target_link_libraries (alpha-client
-    PUBLIC PkgConfig::margo PkgConfig::uuid
+    PUBLIC PkgConfig::margo
     PRIVATE coverage_config)
 target_include_directories (alpha-client PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-client BEFORE PUBLIC
@@ -51,24 +50,10 @@ set_target_properties (alpha-client
     PROPERTIES VERSION ${ALPHA_VERSION}
     SOVERSION ${ALPHA_VERSION_MAJOR})
 
-# admin library
-add_library (alpha-admin ${admin-src-files})
-target_link_libraries (alpha-admin
-    PUBLIC PkgConfig::margo PkgConfig::uuid
-    PRIVATE coverage_config)
-target_include_directories (alpha-admin PUBLIC $<INSTALL_INTERFACE:include>)
-target_include_directories (alpha-admin BEFORE PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
-target_include_directories (alpha-admin BEFORE PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-set_target_properties (alpha-admin
-    PROPERTIES VERSION ${ALPHA_VERSION}
-    SOVERSION ${ALPHA_VERSION_MAJOR})
-
 if (${ENABLE_BEDROCK})
 # bedrock-module library
 add_library (alpha-bedrock-module ${bedrock-module-src-files})
-target_link_libraries (alpha-bedrock-module alpha-server alpha-admin alpha-client bedrock-server)
+target_link_libraries (alpha-bedrock-module alpha-server alpha-client bedrock-server)
 target_include_directories (alpha-bedrock-module PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-bedrock-module BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
@@ -97,16 +82,14 @@ configure_package_config_file (alpha-config.cmake.in
 set (DEST_DIR "${CMAKE_INSTALL_PREFIX}")
 set (SERVER_PRIVATE_LIBS "-lalpha-server")
 set (CLIENT_PRIVATE_LIBS "-lalpha-client")
-set (ADMIN_PRIVATE_LIBS  "-lalpha-admin")
 configure_file ("alpha-server.pc.in" "alpha-server.pc" @ONLY)
 configure_file ("alpha-client.pc.in" "alpha-client.pc" @ONLY)
-configure_file ("alpha-admin.pc.in"  "alpha-admin.pc"  @ONLY)
 
 # configure config.h
 configure_file ("config.h.in" "config.h" @ONLY)
 
 # "make install" rules
-install (TARGETS alpha-server alpha-client alpha-admin
+install (TARGETS alpha-server alpha-client
          EXPORT alpha-targets
          ARCHIVE DESTINATION lib
          LIBRARY DESTINATION lib)
