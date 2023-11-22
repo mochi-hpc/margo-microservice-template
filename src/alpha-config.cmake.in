@@ -2,13 +2,13 @@
 # alpha-config.cmake.in
 #
 
-set(ALPHA_VERSION @ALPHA_VERSION@)
+set (ALPHA_VERSION @ALPHA_VERSION@)
 
 @PACKAGE_INIT@
 
-set_and_check(ALPHA_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+set_and_check (ALPHA_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
 
-check_required_components(alpha)
+check_required_components (alpha)
 
 include (CMakeFindDependencyMacro)
 find_dependency (PkgConfig)
