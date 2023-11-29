@@ -21,7 +21,7 @@ typedef struct alpha_provider {
     uint16_t            provider_id; // Provider id
     ABT_pool            pool;        // Pool on which to post RPC requests
     /* Resource */
-    alpha_resource resource;
+    alpha_resource* resource;
     /* RPC identifiers for admins */
     hg_id_t create_resource_id;
     hg_id_t destroy_resource_id;

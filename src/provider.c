@@ -106,44 +106,48 @@ alpha_return_t alpha_provider_register(
 
     /* add backends available at compiler time (e.g. default/dummy backends) */
     alpha_register_dummy_backend(); // function from "dummy/dummy-backend.h"
+    /* FIXME: add other backend registrations here */
+    /* ... */
 
     /* read the configuration to add defined resources */
     struct json_object* resource = json_object_object_get(config, "resource");
-    if (!resource) {
-        margo_error(mid, "No \"resource\" field found in provider configuration");
-        ret = ALPHA_ERR_INVALID_CONFIG;
-        goto finish;
-    }
-    if(!json_object_is_type(resource, json_type_object)) {
-        margo_error(mid, "\"resource\" field should be an object in provider configuration");
-        ret = ALPHA_ERR_INVALID_CONFIG;
-        goto finish;
-    }
-    struct json_object* resource_type = json_object_object_get(resource, "type");
-    if(!json_object_is_type(resource_type, json_type_string)) {
-        margo_error(mid, "\"type\" field in resource configuration should be a string");
-        ret = ALPHA_ERR_INVALID_CONFIG;
-        goto finish;
-    }
-    const char* type = json_object_get_string(resource_type);
-    struct json_object* resource_config = json_object_object_get(resource, "config");
-    alpha_backend_impl* backend         = find_backend_impl(type);
-    if(!backend) {
-        margo_error(mid, "Could not find backend of type \"%s\"", type);
-        ret = ALPHA_ERR_INVALID_CONFIG;
-        goto finish;
-    }
-    /* create the new resource's context */
-    void* context = NULL;
-    ret = backend->create_resource(mid, p, json_object_to_json_string(resource_config), &context);
-    if(ret != ALPHA_SUCCESS) {
-        margo_error(mid, "Could not create resource, backend returned %d", ret);
-        goto finish;
+    if (resource) {
+        if (!json_object_is_type(resource, json_type_object)) {
+            margo_error(mid, "\"resource\" field should be an object in provider configuration");
+            ret = ALPHA_ERR_INVALID_CONFIG;
+            goto finish;
+        }
+        struct json_object* resource_type = json_object_object_get(resource, "type");
+        if (!json_object_is_type(resource_type, json_type_string)) {
+            margo_error(mid, "\"type\" field in resource configuration should be a string");
+            ret = ALPHA_ERR_INVALID_CONFIG;
+            goto finish;
+        }
+        const char* type = json_object_get_string(resource_type);
+        alpha_backend_impl* backend         = find_backend_impl(type);
+        if (!backend) {
+            margo_error(mid, "Could not find backend of type \"%s\"", type);
+            ret = ALPHA_ERR_INVALID_CONFIG;
+            goto finish;
+        }
+        struct json_object* resource_config = json_object_object_get(resource, "config");
+        /* create the new resource's context */
+        void* context = NULL;
+        ret = backend->create_resource(
+            mid, p,
+            resource_config ? json_object_to_json_string(resource_config) : "{}",
+            &context);
+        if (ret != ALPHA_SUCCESS) {
+            margo_error(mid, "Could not create resource, backend returned %d", ret);
+            goto finish;
+        }
+
+        /* set the provider's resource */
+        p->resource = malloc(sizeof(*(p->resource)));
+        p->resource->ctx = context;
+        p->resource->fn  = backend;
     }
 
-    /* set the provider's resource */
-    p->resource.ctx = context;
-    p->resource.fn  = backend;
 
     /* set the finalize callback */
     margo_provider_push_finalize_callback(mid, p, &alpha_finalize_provider, p);
@@ -172,7 +176,9 @@ static void alpha_finalize_provider(void* p)
     /* FIXME deregister other RPC ids ... */
 
     /* destroy the resource's context */
-    provider->resource.fn->destroy_resource(provider->resource.ctx);
+    if(provider->resource)
+        provider->resource->fn->destroy_resource(provider->resource->ctx);
+    free(provider->resource);
     margo_instance_id mid = provider->mid;
     free(provider);
     margo_info(mid, "ALPHA provider successfuly finalized");
@@ -195,14 +201,16 @@ char* alpha_provider_get_config(alpha_provider_t provider)
 {
     if (!provider) return NULL;
     struct json_object* root = json_object_new_object();
-    struct json_object* resource = json_object_new_object();
-    json_object_object_add(root, "resource", resource);
-    struct json_object* resource_type = json_object_new_string(provider->resource.fn->name);
-    json_object_object_add(resource, "type", resource_type);
-    char* resource_config_str = (provider->resource.fn->get_config)(provider->resource.ctx);
-    struct json_object* resource_config = json_tokener_parse(resource_config_str);
-    free(resource_config_str);
-    json_object_object_add(resource, "config", resource_config);
+    if(provider->resource) {
+        struct json_object* resource = json_object_new_object();
+        json_object_object_add(root, "resource", resource);
+        struct json_object* resource_type = json_object_new_string(provider->resource->fn->name);
+        json_object_object_add(resource, "type", resource_type);
+        char* resource_config_str = (provider->resource->fn->get_config)(provider->resource->ctx);
+        struct json_object* resource_config = json_tokener_parse(resource_config_str);
+        free(resource_config_str);
+        json_object_object_add(resource, "config", resource_config);
+    }
     char* result = strdup(json_object_to_json_string(root));
     json_object_put(root);
     return result;
@@ -237,7 +245,11 @@ static void alpha_sum_ult(hg_handle_t h)
         goto finish;
     }
 
-    alpha_resource* resource = &provider->resource;
+    alpha_resource* resource = provider->resource;
+    if(!resource) {
+        out.ret = ALPHA_ERR_INVALID_RESOURCE;
+        goto finish;
+    }
 
     /* call sum on the resource's context */
     out.result = resource->fn->sum(resource->ctx, in.x, in.y);
