@@ -23,7 +23,8 @@ typedef struct alpha_resource_handle *alpha_resource_handle_t;
  * @param[in] client ALPHA client responsible for the resource handle
  * @param[in] addr Mercury address of the provider
  * @param[in] provider_id id of the provider
- * @param[in] handle resource handle
+ * @param[in] check If true, will send an RPC to check that the provider exists
+ * @param[out] handle resource handle
  *
  * @return ALPHA_SUCCESS or error code defined in alpha-common.h
  */
@@ -31,6 +32,7 @@ alpha_return_t alpha_resource_handle_create(
         alpha_client_t client,
         hg_addr_t addr,
         uint16_t provider_id,
+        bool check,
         alpha_resource_handle_t* handle);
 
 /**

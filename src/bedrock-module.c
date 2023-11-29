@@ -65,7 +65,7 @@ static int alpha_create_provider_handle(
 {
     alpha_client_t c = (alpha_client_t)client;
     alpha_resource_handle_t tmp;
-    alpha_resource_handle_create(c, address, provider_id, &tmp);
+    alpha_resource_handle_create(c, address, provider_id, true, &tmp);
     *ph = (bedrock_module_provider_handle_t)tmp;
     return BEDROCK_SUCCESS;
 }

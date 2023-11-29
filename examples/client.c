@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     }
 
     margo_info(mid, "Creating resource handle for provider id %d", (int)provider_id);
-    ret = alpha_resource_handle_create(alpha_clt, svr_addr, provider_id, &alpha_rh);
+    ret = alpha_resource_handle_create(alpha_clt, svr_addr, provider_id, true, &alpha_rh);
     if(ret != ALPHA_SUCCESS) {
         FATAL(mid,"alpha_resource_handle_create failed (ret = %d)", ret);
     }

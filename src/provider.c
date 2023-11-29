@@ -44,16 +44,16 @@ alpha_return_t alpha_provider_register(
 
     margo_info(mid, "Registering ALPHA provider with provider id %u", provider_id);
 
+    /* check if another provider with the same ID is already registered */
+    if(margo_provider_registered_identity(mid, provider_id)) {
+        margo_error(mid, "A provider with the same ID is already registered");
+        return ALPHA_ERR_INVALID_PROVIDER;
+    }
+
     flag = margo_is_listening(mid);
     if(flag == HG_FALSE) {
         margo_error(mid, "Margo instance is not a server");
         return ALPHA_ERR_INVALID_ARGS;
-    }
-
-    margo_provider_registered_name(mid, "alpha_sum", provider_id, &id, &flag);
-    if(flag == HG_TRUE) {
-        margo_error(mid, "Provider with the same provider id (%u) already register", provider_id);
-        return ALPHA_ERR_INVALID_PROVIDER;
     }
 
     // parse json configuration
@@ -148,6 +148,9 @@ alpha_return_t alpha_provider_register(
     /* set the finalize callback */
     margo_provider_push_finalize_callback(mid, p, &alpha_finalize_provider, p);
 
+    /* set the provider's identity */
+    margo_provider_register_identity(mid, provider_id, "alpha");
+
     if(provider)
         *provider = p;
 
@@ -162,6 +165,7 @@ static void alpha_finalize_provider(void* p)
 {
     alpha_provider_t provider = (alpha_provider_t)p;
     margo_info(provider->mid, "Finalizing ALPHA provider");
+    margo_provider_deregister_identity(provider->mid, provider->provider_id);
     margo_deregister(provider->mid, provider->create_resource_id);
     margo_deregister(provider->mid, provider->destroy_resource_id);
     margo_deregister(provider->mid, provider->sum_id);

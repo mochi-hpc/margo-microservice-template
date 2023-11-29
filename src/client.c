@@ -43,17 +43,28 @@ alpha_return_t alpha_resource_handle_create(
         alpha_client_t client,
         hg_addr_t addr,
         uint16_t provider_id,
+        bool check,
         alpha_resource_handle_t* handle)
 {
     if(client == ALPHA_CLIENT_NULL)
         return ALPHA_ERR_INVALID_ARGS;
+
+    hg_return_t ret;
+
+    if(check) {
+        char buffer[sizeof("alpha")];
+        size_t bufsize = sizeof("alpha");
+        ret = margo_provider_get_identity(client->mid, addr, provider_id, buffer, &bufsize);
+        if(ret != HG_SUCCESS || strcmp("alpha", buffer) != 0)
+            return ALPHA_ERR_INVALID_PROVIDER;
+    }
 
     alpha_resource_handle_t rh =
         (alpha_resource_handle_t)calloc(1, sizeof(*rh));
 
     if(!rh) return ALPHA_ERR_ALLOCATION;
 
-    hg_return_t ret = margo_addr_dup(client->mid, addr, &(rh->addr));
+    ret = margo_addr_dup(client->mid, addr, &(rh->addr));
     if(ret != HG_SUCCESS) {
         free(rh);
         return ALPHA_ERR_FROM_MERCURY;

@@ -52,8 +52,14 @@ TEST_CASE("Test client interface", "[client]") {
             alpha_resource_handle_t rh;
             // test that we can create a resource handle
             ret = alpha_resource_handle_create(client,
-                    context->addr, provider_id, &rh);
+                    context->addr, provider_id, true, &rh);
             REQUIRE(ret == ALPHA_SUCCESS);
+
+            // test that we get an error when using a wrong provider ID
+            alpha_resource_handle_t rh2;
+            ret = alpha_resource_handle_create(client,
+                      context->addr, provider_id + 123, true, &rh2);
+            REQUIRE(ret == ALPHA_ERR_INVALID_PROVIDER);
 
             SECTION("Send sum RPC") {
                 // test that we can send a sum RPC to the resource
