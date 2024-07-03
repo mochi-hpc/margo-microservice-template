@@ -4,7 +4,7 @@ spack:
   - pkgconfig
   - mochi-margo
   - json-c
-  - mochi-bedrock
+  - mochi-bedrock-module-api
   concretizer:
     unify: true
     reuse: true

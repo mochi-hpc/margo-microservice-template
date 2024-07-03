@@ -53,7 +53,7 @@ set_target_properties (alpha-client
 if (${ENABLE_BEDROCK})
 # bedrock-module library
 add_library (alpha-bedrock-module ${bedrock-module-src-files})
-target_link_libraries (alpha-bedrock-module alpha-server alpha-client bedrock-server)
+target_link_libraries (alpha-bedrock-module alpha-server alpha-client bedrock::module-api)
 target_include_directories (alpha-bedrock-module PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories (alpha-bedrock-module BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
