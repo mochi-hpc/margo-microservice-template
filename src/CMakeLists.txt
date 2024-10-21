@@ -9,7 +9,7 @@ set (dummy-src-files
      dummy/dummy-backend.c)
 
 set (bedrock-module-src-files
-     bedrock-module.c)
+     bedrock-module.cpp)
 
 # load package helper for generating cmake CONFIG packages
 include (CMakePackageConfigHelpers)
