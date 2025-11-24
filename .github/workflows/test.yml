@@ -44,15 +44,15 @@ jobs:
 
     - name: Build code and run unit tests
       run: |
-        eval `spack env activate --sh tests`
-        mkdir build
-        cd build
+        eval `spack env activate --sh tests` &&
+        mkdir build &&
+        cd build &&
         cmake .. -DENABLE_COVERAGE=OFF \
                  -DENABLE_TESTS=ON \
                  -DENABLE_EXAMPLES=ON \
                  -DENABLE_BEDROCK=ON \
-                 -DCMAKE_BUILD_TYPE=RelWithDebInfo
-        make
+                 -DCMAKE_BUILD_TYPE=RelWithDebInfo &&
+        make &&
         ctest --output-on-failure
 
     # Uncomment the step bellow to push the dependencies into the build cache
