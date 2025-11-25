@@ -57,6 +57,12 @@ if (${ENABLE_BEDROCK})
     find_package (bedrock-module-api REQUIRED)
 endif ()
 
+if (ENABLE_PYTHON)
+    find_package (Python COMPONENTS Interpreter Development REQUIRED)
+    find_package (pybind11 REQUIRED)
+    add_subdirectory (python)
+endif ()
+
 # search for margo
 pkg_check_modules (margo REQUIRED IMPORTED_TARGET margo)
 # search for json-c

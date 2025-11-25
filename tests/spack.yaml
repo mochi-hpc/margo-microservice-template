@@ -5,6 +5,10 @@ spack:
   - mochi-margo ^mercury~boostsys~checksum ^libfabric fabrics=tcp,rxm
   - json-c
   - mochi-bedrock-module-api
+  - python
+  - py-pybind11
+  - py-mochi-margo
+  - py-coverage
   concretizer:
     unify: true
     reuse: true
@@ -12,10 +16,20 @@ spack:
     prefix_inspections:
       lib: [LD_LIBRARY_PATH]
       lib64: [LD_LIBRARY_PATH]
-  mirrors:
-    mochi-buildcache:
-      url: oci://ghcr.io/mochi-hpc/mochi-spack-buildcache
-      signed: false
-  config:
-    install_tree:
-      padded_length: 128
+#  mirrors:
+#    mochi-buildcache:
+#      url: oci://ghcr.io/mochi-hpc/mochi-spack-buildcache
+#      signed: false
+#  config:
+#    install_tree:
+#      padded_length: 128
+  packages:
+    mochi-margo:
+      require: "@0.15.0:"
+    mochi-thallium:
+      require: "@0.12.0:"
+    mochi-bedrock-module-api:
+      require: "@0.2.1:"
+    python:
+      # we force 3.12 to avoid a conflict with the version of Python installed on the github runners
+      require: "@3.12.12"

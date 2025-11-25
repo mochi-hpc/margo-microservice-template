@@ -5,6 +5,9 @@ spack:
   - mochi-margo
   - json-c
   - mochi-bedrock-module-api
+  - py-pybind11
+  - python
+  - py-mochi-margo
   concretizer:
     unify: true
     reuse: true
@@ -15,3 +18,7 @@ spack:
   packages:
     mochi-margo:
       require: "@0.15.0:"
+    mochi-bedrock-module-api:
+      require: "@0.2.1:"
+    python:
+      require: "@3.12.0:"
