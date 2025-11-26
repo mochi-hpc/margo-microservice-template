@@ -25,6 +25,8 @@ static inline alpha_return_t add_backend_impl(alpha_backend_impl* backend);
 /* Client RPCs */
 static DECLARE_MARGO_RPC_HANDLER(alpha_sum_ult)
 static void alpha_sum_ult(hg_handle_t h);
+static DECLARE_MARGO_RPC_HANDLER(alpha_sum_multi_ult)
+static void alpha_sum_multi_ult(hg_handle_t h);
 
 /* FIXME: add other RPC declarations here */
 
@@ -101,10 +103,16 @@ alpha_return_t alpha_provider_register(
     margo_register_data(mid, id, (void*)p, NULL);
     p->sum_id = id;
 
+    id = MARGO_REGISTER_PROVIDER(mid, "alpha_sum_multi",
+            sum_multi_in_t, sum_multi_out_t,
+            alpha_sum_multi_ult, provider_id, p->pool);
+    margo_register_data(mid, id, (void*)p, NULL);
+    p->sum_multi_id = id;
+
     /* FIXME: add other RPC registration here */
     /* ... */
 
-    /* add backends available at compiler time (e.g. default/dummy backends) */
+    /* add backends available at compile time (e.g. default/dummy backends) */
     alpha_register_dummy_backend(); // function from "dummy/dummy-backend.h"
     /* FIXME: add other backend registrations here */
     /* ... */
@@ -162,6 +170,7 @@ alpha_return_t alpha_provider_register(
 
 finish:
     if(config) json_object_put(config);
+    if(ret != ALPHA_SUCCESS) alpha_finalize_provider(p);
     return ret;
 }
 
@@ -170,9 +179,8 @@ static void alpha_finalize_provider(void* p)
     alpha_provider_t provider = (alpha_provider_t)p;
     margo_info(provider->mid, "Finalizing ALPHA provider");
     margo_provider_deregister_identity(provider->mid, provider->provider_id);
-    margo_deregister(provider->mid, provider->create_resource_id);
-    margo_deregister(provider->mid, provider->destroy_resource_id);
     margo_deregister(provider->mid, provider->sum_id);
+    margo_deregister(provider->mid, provider->sum_multi_id);
     /* FIXME deregister other RPC ids ... */
 
     /* destroy the resource's context */
@@ -263,6 +271,132 @@ finish:
     margo_destroy(h);
 }
 static DEFINE_MARGO_RPC_HANDLER(alpha_sum_ult)
+
+static void alpha_sum_multi_ult(hg_handle_t h)
+{
+    hg_return_t     hret;
+    sum_multi_in_t  in;
+    sum_multi_out_t out;
+    int32_t* x_buf = NULL;
+    int32_t* y_buf = NULL;
+    int32_t* r_buf = NULL;
+    hg_bulk_t x_local_bulk = HG_BULK_NULL;
+    hg_bulk_t y_local_bulk = HG_BULK_NULL;
+    hg_bulk_t r_local_bulk = HG_BULK_NULL;
+    hg_addr_t x_addr = HG_ADDR_NULL;
+    hg_addr_t y_addr = HG_ADDR_NULL;
+    hg_addr_t r_addr = HG_ADDR_NULL;
+
+    out.ret = ALPHA_SUCCESS;
+
+    /* find the margo instance */
+    margo_instance_id mid = margo_hg_handle_get_instance(h);
+
+    /* find the provider */
+    const struct hg_info* info = margo_get_info(h);
+    alpha_provider_t provider = (alpha_provider_t)margo_registered_data(mid, info->id);
+
+    /* deserialize the input */
+    hret = margo_get_input(h, &in);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not deserialize output (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+
+    alpha_resource* resource = provider->resource;
+
+    /* lookup addresses */
+    hret = margo_addr_lookup(mid, in.x.address, &x_addr);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not lookup address for x buffer (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+    hret = margo_addr_lookup(mid, in.y.address, &y_addr);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not lookup address for y buffer (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+    hret = margo_addr_lookup(mid, in.result.address, &r_addr);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not lookup address for result buffer (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+
+    /* allocate local buffers for x, y, and result */
+    hg_size_t x_buf_size = sizeof(int32_t)*in.count;
+    hg_size_t y_buf_size = sizeof(int32_t)*in.count;
+    hg_size_t r_buf_size = sizeof(int32_t)*in.count;
+    x_buf = (int32_t*)malloc(x_buf_size);
+    y_buf = (int32_t*)malloc(y_buf_size);
+    r_buf = (int32_t*)malloc(r_buf_size);
+
+    /* create bulk handles for x, y, and result */
+    hret = margo_bulk_create(mid, 1, (void**)&x_buf, &x_buf_size, HG_BULK_WRITE_ONLY, &x_local_bulk);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not create bulk handle for x buffer (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+    hret = margo_bulk_create(mid, 1, (void**)&y_buf, &y_buf_size, HG_BULK_WRITE_ONLY, &y_local_bulk);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not create bulk handle for y buffer (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+    hret = margo_bulk_create(mid, 1, (void**)&r_buf, &r_buf_size, HG_BULK_READ_ONLY, &r_local_bulk);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not create bulk handle for result buffer (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+
+    /* transfer input data */
+    hret = margo_bulk_transfer(mid, HG_BULK_PULL, x_addr, in.x.bulk, in.x.offset, x_local_bulk, 0, x_buf_size);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not bulk transfer x data (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+    hret = margo_bulk_transfer(mid, HG_BULK_PULL, y_addr, in.y.bulk, in.y.offset, y_local_bulk, 0, y_buf_size);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not bulk transfer y data (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+
+    /* call sum on the resource's context */
+    for(size_t i = 0; i < in.count; ++i)
+        r_buf[i] = resource->fn->sum(resource->ctx, x_buf[i], y_buf[i]);
+
+    hret = margo_bulk_transfer(mid, HG_BULK_PUSH, r_addr,
+        in.result.bulk, in.result.offset, r_local_bulk, 0, r_buf_size);
+    if(hret != HG_SUCCESS) {
+        margo_error(mid, "Could not bulk transfer result data (mercury error %d)", hret);
+        out.ret = ALPHA_ERR_FROM_MERCURY;
+        goto finish;
+    }
+
+    margo_debug(mid, "Called sum_multi RPC");
+
+finish:
+    hret = margo_respond(h, &out);
+    hret = margo_bulk_free(x_local_bulk);
+    hret = margo_bulk_free(y_local_bulk);
+    hret = margo_bulk_free(r_local_bulk);
+    hret = margo_addr_free(mid, x_addr);
+    hret = margo_addr_free(mid, y_addr);
+    hret = margo_addr_free(mid, r_addr);
+    hret = margo_free_input(h, &in);
+    margo_destroy(h);
+    free(x_buf);
+    free(y_buf);
+    free(r_buf);
+}
+static DEFINE_MARGO_RPC_HANDLER(alpha_sum_multi_ult)
 
 static inline alpha_backend_impl* find_backend_impl(const char* name)
 {

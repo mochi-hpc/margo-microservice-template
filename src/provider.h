@@ -22,11 +22,9 @@ typedef struct alpha_provider {
     ABT_pool            pool;        // Pool on which to post RPC requests
     /* Resource */
     alpha_resource* resource;
-    /* RPC identifiers for admins */
-    hg_id_t create_resource_id;
-    hg_id_t destroy_resource_id;
     /* RPC identifiers for clients */
     hg_id_t sum_id;
+    hg_id_t sum_multi_id;
     /* ... add other RPC identifiers here ... */
 } alpha_provider;
 

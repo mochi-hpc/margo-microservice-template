@@ -23,6 +23,15 @@ MERCURY_GEN_PROC(sum_out_t,
         ((int32_t)(result))\
         ((int32_t)(ret)))
 
+MERCURY_GEN_PROC(sum_multi_in_t,
+        ((uint64_t)(count))\
+        ((alpha_bulk_location_t)(x))\
+        ((alpha_bulk_location_t)(y))\
+        ((alpha_bulk_location_t)(result)))
+
+MERCURY_GEN_PROC(sum_multi_out_t,
+        ((int32_t)(ret)))
+
 /* FIXME: other types come here */
 
 #endif

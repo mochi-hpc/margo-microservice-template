@@ -69,6 +69,26 @@ TEST_CASE("Test client interface", "[client]") {
                 REQUIRE(result == 100);
             }
 
+            SECTION("Send sum RPC with timeout") {
+                // test that we can send a sum RPC to the resource
+                int32_t result = 0;
+                ret = alpha_compute_sum_timed(rh, 45, 55, 500.0, &result);
+                REQUIRE(ret == ALPHA_SUCCESS);
+                REQUIRE(result == 100);
+            }
+
+            SECTION("Send sum_multi RPC") {
+                // test that we can send a sum RPC to the resource
+                int32_t x[3] = {1,2,3};
+                int32_t y[3] = {4,5,6};
+                int32_t result[3] = {0,0,0};
+                ret = alpha_compute_sum_multi(rh, 3, x, y, result);
+                REQUIRE(ret == ALPHA_SUCCESS);
+                REQUIRE(result[0] == 5);
+                REQUIRE(result[1] == 7);
+                REQUIRE(result[2] == 9);
+            }
+
             // test that we can increase the ref count
             ret = alpha_resource_handle_ref_incr(rh);
             REQUIRE(ret == ALPHA_SUCCESS);

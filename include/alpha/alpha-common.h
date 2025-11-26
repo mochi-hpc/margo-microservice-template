@@ -7,6 +7,10 @@
 #define __ALPHA_COMMON_H
 
 #include <stdint.h>
+#include <margo.h>
+#include <mercury_proc.h>
+#include <mercury_proc_bulk.h>
+#include <mercury_proc_string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +21,7 @@ extern "C" {
  */
 typedef enum alpha_return_t {
     ALPHA_SUCCESS,
+    ALPHA_TIMEOUT,               /* Timeout */
     ALPHA_ERR_ALLOCATION,        /* Allocation error */
     ALPHA_ERR_INVALID_ARGS,      /* Invalid argument */
     ALPHA_ERR_INVALID_PROVIDER,  /* Invalid provider id */
@@ -31,6 +36,20 @@ typedef enum alpha_return_t {
     /* ... TODO add more error codes here if needed */
     ALPHA_ERR_OTHER              /* Other error */
 } alpha_return_t;
+
+/**
+ * The alpha_bulk_location_t structure encapsulates a bulk handle
+ * with the address it originates from, and the range (offset, size)
+ * that is relevant for the server to perform its operation on.
+ *
+ * It is defined using MERCURY_GEN_PROC so that it can be serialized
+ * as an RPC argument.
+ */
+MERCURY_GEN_PROC(alpha_bulk_location_t,
+    ((hg_bulk_t)(bulk))\
+    ((hg_string_t)(address))\
+    ((int64_t)(offset))\
+    ((int64_t)(size)))
 
 #ifdef __cplusplus
 }

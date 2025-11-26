@@ -13,6 +13,7 @@
 typedef struct alpha_client {
    margo_instance_id mid;
    hg_id_t           sum_id;
+   hg_id_t           sum_multi_id;
    uint64_t          num_resource_handles;
 } alpha_client;
 

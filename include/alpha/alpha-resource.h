@@ -73,6 +73,60 @@ alpha_return_t alpha_compute_sum(
         int32_t y,
         int32_t* result);
 
+/**
+ * @brief Same as alpha_compute_sum but allows passing a timeout.
+ *
+ * @param[in] handle resource handle.
+ * @param[in] x first number.
+ * @param[in] y second number.
+ * @param[in] timeout_ms timeout (in milliseconds).
+ * @param[out] result resulting value.
+ *
+ * @return ALPHA_SUCCESS or error code defined in alpha-common.h
+ */
+alpha_return_t alpha_compute_sum_timed(
+        alpha_resource_handle_t handle,
+        int32_t x,
+        int32_t y,
+        double timeout_ms,
+        int32_t* result);
+
+/**
+ * @brief Makes the target ALPHA resource compute the pair-wise sum of the
+ * numbers in the x and y arrays and set the results in the result array.
+ *
+ * @param[in] handle resource handle.
+ * @param[in] x first array of numbers.
+ * @param[in] y second array of numbers.
+ * @param[out] result resulting values.
+ *
+ * @return ALPHA_SUCCESS or error code defined in alpha-common.h
+ */
+alpha_return_t alpha_compute_sum_multi(
+        alpha_resource_handle_t handle,
+        size_t count,
+        const int32_t* x,
+        const int32_t* y,
+        int32_t* result);
+
+/**
+ * @brief Low-level version of alpha_compute_sum_multi based on user-provided
+ * bulk handles.
+ *
+ * @param[in] handle resource handle.
+ * @param[in] x bulk location of the first array of numbers.
+ * @param[in] y bulk location of the second array of numbers.
+ * @param[out] result bulk location of the resulting values.
+ *
+ * @return ALPHA_SUCCESS or error code defined in alpha-common.h
+ */
+alpha_return_t alpha_compute_sum_bulk(
+        alpha_resource_handle_t handle,
+        size_t count,
+        const alpha_bulk_location_t* x,
+        const alpha_bulk_location_t* y,
+        const alpha_bulk_location_t* result);
+
 #ifdef __cplusplus
 }
 #endif
