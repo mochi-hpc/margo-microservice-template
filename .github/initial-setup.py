@@ -93,13 +93,13 @@ if __name__ == '__main__':
         'RESOURCE' : resource_name.upper()
     }
     files_to_edit = list_files_to_edit('.',
-        extensions=['.c', '.cpp', '.h', '.txt', '.in', '.json'],
+        extensions=['.c', '.cpp', '.h', '.txt', '.in', '.json', '.py'],
         exclude_directories=['.git', '.github', 'build', '.spack-env'],
         exclude_files=['uthash.h', 'initial-setup.json'])
     for f in files_to_edit:
         replace_in_file(f, mapping)
     rename_files_and_directories('.',
-        extensions=['.c', '.cpp', '.h', '.txt', '.in', '.json'],
+        extensions=['.c', '.cpp', '.h', '.txt', '.in', '.json', '.py'],
         mapping=mapping,
         exclude_directories=['.git', '.github', 'build', '.spack-env'],
         exclude_files=['uthash.h', 'initial-setup.json'])
