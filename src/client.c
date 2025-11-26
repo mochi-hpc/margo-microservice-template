@@ -7,6 +7,26 @@
 #include "client.h"
 #include "alpha/alpha-client.h"
 
+// TUTORIAL
+// ********
+//
+// This file contains the implementation of the client library.
+// Several example RPCs are provided which pass their data as RPC arguments
+// or using RDMA.
+//
+// Note that contrary the the Thallium microservice template, which provides
+// a non-blocking API (with functions returning Future objects that must be waited
+// on), this template provide blocking functions. Non-blocking functions can crafted
+// using Margo functions such as margo_provider_iforward (instead of margo_provider_forward),
+// margo_provider_iforward_timed (instead of margo_provider_forward_timed), and so on.
+// These functions would return a margo_request object that the caller needs to wait
+// on using margo_wait. Making a non-blocking API in C is arguably more complex since
+// the margo_request needs to be awaited before functions such as margo_get_output,
+// margo_free_output, and margo_destroy can be called to complete the RPC flow.
+// One way to make a non-blocking API would be to encapsulate a margo_request along
+// with other data (such as the hg_handle_t of the on-going RPC) in an opaque alpha_request_t
+// object, and provide an alpha_request_wait function to complete the operation and cleanup.
+
 alpha_return_t alpha_client_init(margo_instance_id mid, alpha_client_t* client)
 {
     alpha_client_t c = (alpha_client_t)calloc(1, sizeof(*c));

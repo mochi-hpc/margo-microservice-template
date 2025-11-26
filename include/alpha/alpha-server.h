@@ -10,6 +10,17 @@
 #include <alpha/alpha-backend.h>
 #include <margo.h>
 
+// TUTORIAL
+// ********
+//
+// A alpha_provider_t object is an object that (1) holds a resource instance and
+// (2) receives RPCs to be executed against this instance. It is initialized
+// with a Margo instance ID, a provider ID, a configuration string, which
+// should be JSON-formatted, and some other optional arguments such as an Argobots
+// pool in which its RPCs will land.
+// In more complex components, it may require other dependencies such as handles
+// to other components, other Argobots pools, etc.
+
 #ifdef __cplusplus
 extern "C" {
 #endif

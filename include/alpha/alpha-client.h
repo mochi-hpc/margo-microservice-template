@@ -13,6 +13,15 @@
 extern "C" {
 #endif
 
+// TUTORIAL
+// ********
+//
+// The client library is composed of the alpha_lient_t and alpha_resource_handle_t objects.
+// The alpha_client_t is an object that registers RPCs with the Margo instance. It can then
+// be used create alpha_resource_handle_t instances using alpha_resource_handle_create.
+// The alpha_client_t will keep a count of the created resource handles, and will print
+// a warning if it is destroyed before all the resource handles have been destroyed.
+
 typedef struct alpha_client* alpha_client_t;
 #define ALPHA_CLIENT_NULL ((alpha_client_t)NULL)
 

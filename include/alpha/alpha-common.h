@@ -16,6 +16,11 @@
 extern "C" {
 #endif
 
+// TUTORIAL
+// ********
+//
+// This header hosts common definitions used by both the client and server libraries.
+
 /**
  * @brief Error codes that can be returned by ALPHA functions.
  */

@@ -28,7 +28,9 @@ class AlphaComponent : public bedrock::AbstractComponent {
                 mid, provider_id, config.c_str(), &alpha_args,
                 (alpha_provider_t*)provider);
         if(ret != ALPHA_SUCCESS)
-            throw bedrock::Exception{"Could not instantiate Alpha provider"};
+            throw bedrock::Exception{
+                std::string{"Could not instantiate Alpha provider, alpha_provider_register returned "}
+                + std::to_string(ret)};
         m_provider = std::shared_ptr<alpha_provider>{
             provider, alpha_provider_destroy};
     }

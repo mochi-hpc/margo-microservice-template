@@ -13,6 +13,13 @@
 extern "C" {
 #endif
 
+// TUTORIAL
+// ********
+//
+// A backend for a provider is implemented using a structure of function pointers,
+// similar to a vtable in C++. The alpha_register_backend function can be used to
+// register a backend type.
+
 typedef struct alpha_provider* alpha_provider_t;
 
 typedef alpha_return_t (*alpha_backend_create_fn)(margo_instance_id, alpha_provider_t, const char*, void**);
